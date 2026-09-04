@@ -1,4 +1,4 @@
-import pg from 'pg';
+import { Client } from 'pg';
 
 /**
  * Asynchronously updates a user's is_active status in Supabase public.users table.
@@ -9,7 +9,7 @@ export async function syncUserSuspensionToSupabase(email: string, isActive: bool
   if (!connectionUrl) return;
 
   const cleanUrl = connectionUrl.split('?')[0];
-  const client = new pg.Client({
+  const client = new Client({
     connectionString: cleanUrl,
     ssl: { rejectUnauthorized: false },
   });
@@ -30,3 +30,4 @@ export async function syncUserSuspensionToSupabase(email: string, isActive: bool
     }
   }
 }
+

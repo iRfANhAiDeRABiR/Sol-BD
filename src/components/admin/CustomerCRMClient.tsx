@@ -37,30 +37,15 @@ import { toast } from 'sonner';
 export interface RegisteredUserRecord {
   id: string;
   email: string;
-  name: string | null;
-  phone: string | null;
+  name?: string | null;
+  phone?: string | null;
   role: string;
   isActive: boolean;
-  walletBalance: number;
-  loyaltyPoints: number;
+  walletBalance?: number;
+  loyaltyPoints?: number;
   createdAt: Date | string;
-  orders: Array<{
-    id: string;
-    orderNumber: string;
-    orderStatus: string;
-    paymentStatus: string;
-    paymentMethod: string;
-    totalAmount: number;
-    deliveredKeys?: string;
-    createdAt: Date | string;
-    items: Array<{
-      id: string;
-      quantity: number;
-      unitPrice: number;
-      productName?: string | null;
-      variantName?: string | null;
-    }>;
-  }>;
+  orders: any[];
+  [key: string]: any;
 }
 
 interface CustomerRecord {
@@ -82,7 +67,7 @@ interface SubscriberRecord {
 
 interface CustomerCRMProps {
   currentAdminId?: string;
-  initialUsers?: RegisteredUserRecord[];
+  initialUsers?: any[];
   customers: CustomerRecord[];
   initialSubscribers: SubscriberRecord[];
 }

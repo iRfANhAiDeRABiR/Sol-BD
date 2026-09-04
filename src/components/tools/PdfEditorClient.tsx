@@ -13,7 +13,7 @@ interface Point {
 
 interface DrawStroke {
   id: string;
-  type: "draw" | "highlighter";
+  type: "draw" | "highlighter" | "line";
   points: Point[];
   color: string;
   width: number;
@@ -21,7 +21,7 @@ interface DrawStroke {
 
 interface ShapeItem {
   id: string;
-  type: "rect" | "blackout" | "whiteout" | "circle" | "arrow";
+  type: "rect" | "blackout" | "whiteout" | "circle" | "arrow" | "line";
   startX: number;
   startY: number;
   endX: number;
@@ -38,6 +38,9 @@ interface TextItem {
   fontSize: number;
   color: string;
   fontFamily: string;
+  isBold?: boolean;
+  isItalic?: boolean;
+  bgFill?: "none" | "white" | "yellow";
 }
 
 interface PlacedImageItem {
@@ -61,13 +64,12 @@ type ToolType =
   | "text"
   | "draw"
   | "highlighter"
+  | "line"
   | "rect"
   | "blackout"
   | "whiteout"
   | "circle"
-  | "arrow"
-  | "signature"
-  | "stamp";
+  | "arrow";
 
 // Script loader helper for PDF.js CDN
 let pdfjsPromise: Promise<any> | null = null;
@@ -105,6 +107,8 @@ export function PdfEditorClient() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.2);
   const [pageRotations, setPageRotations] = useState<Record<number, number>>({});
+  const [deletedPages, setDeletedPages] = useState<Set<number>>(new Set());
+  const [addedBlankPages, setAddedBlankPages] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -115,10 +119,17 @@ export function PdfEditorClient() {
   const [brushWidth, setBrushWidth] = useState<number>(3);
   const [fontSize, setFontSize] = useState<number>(18);
   const [textColor, setTextColor] = useState<string>("#0F172A");
+  const [fontFamily, setFontFamily] = useState<string>("sans-serif");
+  const [isBold, setIsBold] = useState<boolean>(false);
+  const [isItalic, setIsItalic] = useState<boolean>(false);
+  const [textBgFill, setTextBgFill] = useState<"none" | "white" | "yellow">("none");
+
+  // Selection & Drag State
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   // Page Annotations: Map page number -> annotations
   const [annotations, setAnnotations] = useState<Record<number, PageAnnotations>>({});
-  
+
   // History for Undo/Redo per page
   const [history, setHistory] = useState<Record<number, PageAnnotations[]>>({});
   const [historyIndex, setHistoryIndex] = useState<Record<number, number>>({});
@@ -224,7 +235,31 @@ export function PdfEditorClient() {
     notify.success("Action redone");
   }, [currentPage, history, historyIndex]);
 
-  // Load and Render PDF page
+  // Keyboard shortcuts (Ctrl+Z, Ctrl+Y, Esc, Delete)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        handleRedo();
+      } else if (e.key === "Escape") {
+        setActiveTool("select");
+        setSelectedItemId(null);
+        setShowSigModal(false);
+        setShowStampModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleUndo, handleRedo]);
+
+  // Render PDF page to canvas
   const renderPdfPage = useCallback(
     async (pdf: any, pageNum: number, currentScale: number, rotationDeg: number) => {
       if (!pdf || !pdfCanvasRef.current) return;
@@ -239,7 +274,6 @@ export function PdfEditorClient() {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // Set dimensions for high-DPI
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         setPageSize({ width: viewport.width, height: viewport.height });
@@ -316,6 +350,13 @@ export function PdfEditorClient() {
         const ry = h / 2;
         ctx.ellipse(x + rx, y + ry, rx, ry, 0, 0, 2 * Math.PI);
         ctx.stroke();
+      } else if (shape.type === "line") {
+        ctx.strokeStyle = shape.color;
+        ctx.lineWidth = shape.width;
+        ctx.beginPath();
+        ctx.moveTo(shape.startX, shape.startY);
+        ctx.lineTo(shape.endX, shape.endY);
+        ctx.stroke();
       } else if (shape.type === "arrow") {
         ctx.strokeStyle = shape.color;
         ctx.fillStyle = shape.color;
@@ -325,7 +366,6 @@ export function PdfEditorClient() {
         ctx.lineTo(shape.endX, shape.endY);
         ctx.stroke();
 
-        // Arrow head
         const angle = Math.atan2(shape.endY - shape.startY, shape.endX - shape.startX);
         const headlen = 14;
         ctx.beginPath();
@@ -360,7 +400,7 @@ export function PdfEditorClient() {
     redrawAnnotations();
   }, [pageSize, redrawAnnotations]);
 
-  // Handle PDF file upload
+  // Handle PDF file upload with cloned buffer to prevent detachment
   const handleFileUpload = async (selectedFile: File) => {
     if (selectedFile.type !== "application/pdf" && !selectedFile.name.endsWith(".pdf")) {
       notify.error("Please select a valid PDF file");
@@ -370,10 +410,16 @@ export function PdfEditorClient() {
     setLoading(true);
     try {
       const pdfjs = await getPdfjs();
-      const buffer = await selectedFile.arrayBuffer();
-      setOriginalBytes(buffer);
+      const rawBuffer = await selectedFile.arrayBuffer();
 
-      const proxy = await pdfjs.getDocument({ data: buffer }).promise;
+      // CLONE BUFFERS: PDF.js worker transfers & detaches the passed buffer.
+      // Keeping a separate clone ensures originalBytes is always intact for pdf-lib!
+      const bufferForPdfJs = rawBuffer.slice(0);
+      const bufferForPdfLib = rawBuffer.slice(0);
+
+      setOriginalBytes(bufferForPdfLib);
+
+      const proxy = await pdfjs.getDocument({ data: new Uint8Array(bufferForPdfJs) }).promise;
       setPdfProxy(proxy);
       setNumPages(proxy.numPages);
       setFile(selectedFile);
@@ -382,6 +428,8 @@ export function PdfEditorClient() {
       setHistory({});
       setHistoryIndex({});
       setPageRotations({});
+      setDeletedPages(new Set());
+      setAddedBlankPages([]);
 
       notify.success(`Loaded "${selectedFile.name}"`, {
         description: `${proxy.numPages} page(s) ready to edit.`,
@@ -396,30 +444,49 @@ export function PdfEditorClient() {
     }
   };
 
-  // Generate a sample PDF for quick testing
+  // Close document and return to upload screen
+  const handleCloseDocument = () => {
+    if (confirm("Close current document? Any unsaved edits will be discarded.")) {
+      setFile(null);
+      setOriginalBytes(null);
+      setPdfProxy(null);
+      setNumPages(0);
+      setCurrentPage(1);
+      setAnnotations({});
+      setHistory({});
+      setHistoryIndex({});
+      setPageRotations({});
+      setDeletedPages(new Set());
+      setAddedBlankPages([]);
+      setSelectedItemId(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  // Generate sample PDF for instant testing
   const handleLoadSamplePdf = async () => {
     setLoading(true);
     try {
       const doc = await PDFDocument.create();
       const page1 = doc.addPage([600, 800]);
-      page1.drawText("SolutionsBD - Sample Document", {
+      page1.drawText("SolutionsBD - Sample Contract", {
         x: 50,
         y: 720,
         size: 24,
         color: rgb(0.06, 0.09, 0.16),
       });
-      page1.drawText("Digital Software License Agreement", {
+      page1.drawText("Digital Software License & Services Agreement", {
         x: 50,
         y: 680,
-        size: 16,
+        size: 15,
         color: rgb(0.4, 0.45, 0.55),
       });
       page1.drawText(
-        "This document is a sample ready for online testing in the SolutionsBD PDF Editor.",
+        "This sample document is loaded directly in your browser for testing.",
         { x: 50, y: 630, size: 12, color: rgb(0.2, 0.2, 0.2) }
       );
       page1.drawText(
-        "You can add your text, draw signatures, highlight important clauses, or redact data.",
+        "Try dragging text, signing, drawing highlights, placing checkmarks, or redacting text.",
         { x: 50, y: 600, size: 12, color: rgb(0.2, 0.2, 0.2) }
       );
       page1.drawRectangle({
@@ -430,7 +497,7 @@ export function PdfEditorClient() {
         borderColor: rgb(0.8, 0.8, 0.9),
         borderWidth: 1,
       });
-      page1.drawText("Invoice Summary: $149.00 USD (Paid via bKash)", {
+      page1.drawText("Order Summary: Windows 11 Pro Retail License - Verified (Paid)", {
         x: 70,
         y: 510,
         size: 14,
@@ -438,13 +505,13 @@ export function PdfEditorClient() {
       });
 
       const page2 = doc.addPage([600, 800]);
-      page2.drawText("Appendix & Terms (Page 2)", {
+      page2.drawText("Page 2 - Acceptance & Signature Clause", {
         x: 50,
         y: 720,
         size: 20,
         color: rgb(0.06, 0.09, 0.16),
       });
-      page2.drawText("Customer Signature Section Below:", {
+      page2.drawText("Please place your signature and date below:", {
         x: 50,
         y: 660,
         size: 14,
@@ -452,8 +519,10 @@ export function PdfEditorClient() {
       });
 
       const pdfBytes = await doc.save();
-      const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
-      const sampleFile = new File([blob], "sample-document.pdf", {
+      const blob = new Blob([pdfBytes as unknown as BlobPart], {
+        type: "application/pdf",
+      });
+      const sampleFile = new File([blob], "sample-contract.pdf", {
         type: "application/pdf",
       });
       await handleFileUpload(sampleFile);
@@ -464,9 +533,12 @@ export function PdfEditorClient() {
     }
   };
 
-  // Canvas Mouse / Touch events for drawing & shapes
+  // Pointer drawing handlers for canvas annotations
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (activeTool === "select") return;
+    if (activeTool === "select") {
+      setSelectedItemId(null);
+      return;
+    }
 
     const canvas = annotCanvasRef.current;
     if (!canvas) return;
@@ -475,7 +547,6 @@ export function PdfEditorClient() {
     const y = e.clientY - rect.top;
 
     if (activeTool === "text") {
-      // Add text element at clicked point
       const newText: TextItem = {
         id: "text_" + Date.now(),
         x,
@@ -483,12 +554,16 @@ export function PdfEditorClient() {
         text: "Click to edit text",
         fontSize,
         color: textColor,
-        fontFamily: "sans-serif",
+        fontFamily,
+        isBold,
+        isItalic,
+        bgFill: textBgFill,
       };
       const annots = getPageAnnots(currentPage);
       const updated = { ...annots, texts: [...annots.texts, newText] };
       setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
       pushHistory(currentPage, updated);
+      setSelectedItemId(newText.id);
       setActiveTool("select");
       return;
     }
@@ -504,6 +579,7 @@ export function PdfEditorClient() {
       activeTool === "blackout" ||
       activeTool === "whiteout" ||
       activeTool === "circle" ||
+      activeTool === "line" ||
       activeTool === "arrow"
     ) {
       isDrawingRef.current = true;
@@ -524,7 +600,6 @@ export function PdfEditorClient() {
       activeStrokeRef.current.push({ x, y });
       redrawAnnotations();
 
-      // Live stroke preview
       const ctx = canvas.getContext("2d");
       if (ctx && activeStrokeRef.current.length > 1) {
         ctx.save();
@@ -572,6 +647,13 @@ export function PdfEditorClient() {
         ctx.lineWidth = brushWidth;
         ctx.beginPath();
         ctx.ellipse(minX + w / 2, minY + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+      } else if (activeTool === "line") {
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushWidth;
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(x, y);
         ctx.stroke();
       } else if (activeTool === "arrow") {
         ctx.strokeStyle = brushColor;
@@ -638,7 +720,119 @@ export function PdfEditorClient() {
     }
   };
 
-  // Text updating
+  // ==========================================
+  // DRAG & DROP IMPLEMENTATION FOR TEXT & IMAGES
+  // ==========================================
+  const startDragItem = (
+    e: React.PointerEvent,
+    id: string,
+    type: "text" | "image",
+    initialX: number,
+    initialY: number
+  ) => {
+    e.stopPropagation();
+    setSelectedItemId(id);
+
+    const startPointerX = e.clientX;
+    const startPointerY = e.clientY;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startPointerX;
+      const deltaY = moveEvent.clientY - startPointerY;
+      const newX = Math.max(0, Math.min(pageSize.width - 40, initialX + deltaX));
+      const newY = Math.max(0, Math.min(pageSize.height - 30, initialY + deltaY));
+
+      setAnnotations((prev) => {
+        const annots = prev[currentPage] || {
+          strokes: [],
+          shapes: [],
+          texts: [],
+          images: [],
+        };
+        if (type === "text") {
+          return {
+            ...prev,
+            [currentPage]: {
+              ...annots,
+              texts: annots.texts.map((t) =>
+                t.id === id ? { ...t, x: newX, y: newY } : t
+              ),
+            },
+          };
+        } else {
+          return {
+            ...prev,
+            [currentPage]: {
+              ...annots,
+              images: annots.images.map((img) =>
+                img.id === id ? { ...img, x: newX, y: newY } : img
+              ),
+            },
+          };
+        }
+      });
+    };
+
+    const handlePointerUp = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      // Commit final position to history
+      const currentAnnots = getPageAnnots(currentPage);
+      pushHistory(currentPage, currentAnnots);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
+  // RESIZE HANDLER FOR PLACED IMAGES / SIGNATURES
+  const startResizeImage = (
+    e: React.PointerEvent,
+    id: string,
+    initialW: number,
+    initialH: number
+  ) => {
+    e.stopPropagation();
+    const startPointerX = e.clientX;
+    const startPointerY = e.clientY;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startPointerX;
+      const deltaY = moveEvent.clientY - startPointerY;
+      const newW = Math.max(40, Math.min(400, initialW + deltaX));
+      const newH = Math.max(20, Math.min(300, initialH + deltaY));
+
+      setAnnotations((prev) => {
+        const annots = prev[currentPage] || {
+          strokes: [],
+          shapes: [],
+          texts: [],
+          images: [],
+        };
+        return {
+          ...prev,
+          [currentPage]: {
+            ...annots,
+            images: annots.images.map((img) =>
+              img.id === id ? { ...img, width: newW, height: newH } : img
+            ),
+          },
+        };
+      });
+    };
+
+    const handlePointerUp = () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      const currentAnnots = getPageAnnots(currentPage);
+      pushHistory(currentPage, currentAnnots);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
+  // Update text content
   const handleUpdateText = (id: string, text: string) => {
     const annots = getPageAnnots(currentPage);
     const updated = {
@@ -656,9 +850,9 @@ export function PdfEditorClient() {
     };
     setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
     pushHistory(currentPage, updated);
+    setSelectedItemId(null);
   };
 
-  // Image / Stamp deletion
   const handleDeleteImage = (id: string) => {
     const annots = getPageAnnots(currentPage);
     const updated = {
@@ -667,11 +861,12 @@ export function PdfEditorClient() {
     };
     setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
     pushHistory(currentPage, updated);
+    setSelectedItemId(null);
   };
 
-  // Clear all annotations on active page
+  // Clear annotations on active page
   const handleClearPage = () => {
-    if (confirm("Are you sure you want to clear all annotations on this page?")) {
+    if (confirm("Clear all added annotations on this page?")) {
       const empty: PageAnnotations = {
         strokes: [],
         shapes: [],
@@ -692,7 +887,85 @@ export function PdfEditorClient() {
     notify.success(`Page ${currentPage} rotated to ${next}°`);
   };
 
-  // Signature Pad Canvas Logic
+  // Rotate all pages in document
+  const handleRotateAllPages = () => {
+    const newRotations: Record<number, number> = {};
+    for (let p = 1; p <= numPages; p++) {
+      const current = pageRotations[p] || 0;
+      newRotations[p] = (current + 90) % 360;
+    }
+    setPageRotations(newRotations);
+    notify.success("All pages rotated 90° clockwise");
+  };
+
+  // Delete current page
+  const handleDeleteCurrentPage = () => {
+    if (numPages <= 1) {
+      notify.error("Cannot delete the only page in the document.");
+      return;
+    }
+    if (confirm(`Delete Page ${currentPage}? This cannot be undone.`)) {
+      setDeletedPages((prev) => new Set([...Array.from(prev), currentPage]));
+      notify.success(`Page ${currentPage} marked for deletion.`);
+      // Move to next or previous page
+      if (currentPage < numPages) {
+        setCurrentPage((p) => p + 1);
+      } else {
+        setCurrentPage((p) => Math.max(1, p - 1));
+      }
+    }
+  };
+
+  // Insert today's date stamp
+  const handleInsertTodayDate = () => {
+    const today = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const newText: TextItem = {
+      id: "date_" + Date.now(),
+      x: 80,
+      y: pageSize.height - 140,
+      text: today,
+      fontSize: 16,
+      color: textColor,
+      fontFamily: "monospace",
+      isBold: true,
+      bgFill: "none",
+    };
+    const annots = getPageAnnots(currentPage);
+    const updated = { ...annots, texts: [...annots.texts, newText] };
+    setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
+    pushHistory(currentPage, updated);
+    setSelectedItemId(newText.id);
+    notify.success(`Date "${today}" added. Drag to position.`);
+  };
+
+  // Insert form checkmark (✓ or ✗)
+  const handleInsertCheckmark = (type: "check" | "cross") => {
+    const symbol = type === "check" ? "✔" : "✖";
+    const color = type === "check" ? "#10B981" : "#EF4444";
+    const newText: TextItem = {
+      id: "symbol_" + Date.now(),
+      x: 120,
+      y: 120,
+      text: symbol,
+      fontSize: 24,
+      color,
+      fontFamily: "sans-serif",
+      isBold: true,
+      bgFill: "none",
+    };
+    const annots = getPageAnnots(currentPage);
+    const updated = { ...annots, texts: [...annots.texts, newText] };
+    setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
+    pushHistory(currentPage, updated);
+    setSelectedItemId(newText.id);
+    notify.success(`Mark "${symbol}" inserted. Drag onto checkbox.`);
+  };
+
+  // Signature Pad Logic
   const sigDrawingRef = useRef<boolean>(false);
   const handleSigPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = sigCanvasRef.current;
@@ -739,7 +1012,6 @@ export function PdfEditorClient() {
       if (!canvas) return;
       dataUrl = canvas.toDataURL("image/png");
     } else {
-      // Type signature
       if (!typedName.trim()) {
         notify.error("Please type your name first");
         return;
@@ -763,7 +1035,7 @@ export function PdfEditorClient() {
     const annots = getPageAnnots(currentPage);
     const newImage: PlacedImageItem = {
       id: "sig_" + Date.now(),
-      x: 100,
+      x: 80,
       y: pageSize.height - 180,
       width: 180,
       height: 70,
@@ -773,7 +1045,8 @@ export function PdfEditorClient() {
     setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
     pushHistory(currentPage, updated);
     setShowSigModal(false);
-    notify.success("Signature added to page. Drag to position.");
+    setSelectedItemId(newImage.id);
+    notify.success("Signature added. Drag or resize on page.");
   };
 
   // Insert document stamp
@@ -806,7 +1079,8 @@ export function PdfEditorClient() {
     setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
     pushHistory(currentPage, updated);
     setShowStampModal(false);
-    notify.success(`"${stampText}" stamp inserted.`);
+    setSelectedItemId(newImage.id);
+    notify.success(`"${stampText}" stamp placed. Drag to position.`);
   };
 
   // Insert uploaded custom image / logo
@@ -831,38 +1105,51 @@ export function PdfEditorClient() {
         setAnnotations((prev) => ({ ...prev, [currentPage]: updated }));
         pushHistory(currentPage, updated);
         setShowStampModal(false);
+        setSelectedItemId(newImage.id);
         notify.success("Image placed on page.");
       }
     };
     reader.readAsDataURL(imgFile);
   };
 
-  // EXPORT & DOWNLOAD EDITED PDF
+  // ==============================================================
+  // EXPORT & DOWNLOAD EDITED PDF WITH PDF-LIB
+  // ==============================================================
   const handleDownloadPdf = async () => {
     if (!originalBytes) {
-      notify.error("No document loaded");
+      notify.error("No document loaded to export.");
       return;
     }
 
     setIsExporting(true);
-    notify.success("Preparing PDF export...", { id: "pdf-export" });
+    notify.success("Generating edited PDF...", { id: "pdf-export" });
 
     try {
-      const pdfDoc = await PDFDocument.load(originalBytes);
+      // Load a fresh clone of originalBytes so we never deal with detached buffers
+      const bytesToLoad = originalBytes.slice(0);
+      const pdfDoc = await PDFDocument.load(bytesToLoad, {
+        ignoreEncryption: true,
+      });
+
       const totalPdfPages = pdfDoc.getPageCount();
 
-      // Apply annotations to each page
+      // 1. Apply rotations and annotations for each page
       for (let p = 1; p <= totalPdfPages; p++) {
-        const page = pdfDoc.getPage(p - 1);
+        // Skip deleted pages
+        if (deletedPages.has(p)) continue;
 
-        // 1. Apply rotation if any
+        const page = pdfDoc.getPage(p - 1);
+        const pdfWidth = page.getWidth();
+        const pdfHeight = page.getHeight();
+
+        // Rotation
         const rot = pageRotations[p] || 0;
         if (rot !== 0) {
           const currentRotation = page.getRotation().angle;
           page.setRotation(degrees((currentRotation + rot) % 360));
         }
 
-        // 2. Check if page has annotations
+        // Annotations
         const pageAnnot = annotations[p];
         if (
           pageAnnot &&
@@ -871,28 +1158,31 @@ export function PdfEditorClient() {
             pageAnnot.texts.length > 0 ||
             pageAnnot.images.length > 0)
         ) {
-          // Render annotations to a high-DPI canvas
+          // Offscreen canvas at 2x resolution matching native PDF page size
           const exportCanvas = document.createElement("canvas");
-          const renderWidth = pageSize.width;
-          const renderHeight = pageSize.height;
-          exportCanvas.width = renderWidth;
-          exportCanvas.height = renderHeight;
+          const renderScale = 2;
+          exportCanvas.width = pdfWidth * renderScale;
+          exportCanvas.height = pdfHeight * renderScale;
           const ctx = exportCanvas.getContext("2d");
 
           if (ctx) {
+            // Calculate scale ratio between editor viewport canvas and export canvas
+            const scaleX = exportCanvas.width / pageSize.width;
+            const scaleY = exportCanvas.height / pageSize.height;
+
             // Draw strokes
             for (const stroke of pageAnnot.strokes) {
               if (stroke.points.length === 0) continue;
               ctx.save();
               ctx.beginPath();
               ctx.strokeStyle = stroke.color;
-              ctx.lineWidth = stroke.width;
+              ctx.lineWidth = stroke.width * scaleX;
               ctx.lineCap = "round";
               ctx.lineJoin = "round";
-              ctx.globalAlpha = stroke.type === "highlighter" ? 0.4 : 1.0;
-              ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+              ctx.globalAlpha = stroke.type === "highlighter" ? 0.35 : 1.0;
+              ctx.moveTo(stroke.points[0].x * scaleX, stroke.points[0].y * scaleY);
               for (let i = 1; i < stroke.points.length; i++) {
-                ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                ctx.lineTo(stroke.points[i].x * scaleX, stroke.points[i].y * scaleY);
               }
               ctx.stroke();
               ctx.restore();
@@ -901,49 +1191,57 @@ export function PdfEditorClient() {
             // Draw shapes
             for (const shape of pageAnnot.shapes) {
               ctx.save();
-              const x = Math.min(shape.startX, shape.endX);
-              const y = Math.min(shape.startY, shape.endY);
-              const w = Math.abs(shape.endX - shape.startX);
-              const h = Math.abs(shape.endY - shape.startY);
+              const sx = shape.startX * scaleX;
+              const sy = shape.startY * scaleY;
+              const ex = shape.endX * scaleX;
+              const ey = shape.endY * scaleY;
+              const minX = Math.min(sx, ex);
+              const minY = Math.min(sy, ey);
+              const w = Math.abs(ex - sx);
+              const h = Math.abs(ey - sy);
 
               if (shape.type === "blackout") {
                 ctx.fillStyle = "#000000";
-                ctx.fillRect(x, y, w, h);
+                ctx.fillRect(minX, minY, w, h);
               } else if (shape.type === "whiteout") {
                 ctx.fillStyle = "#FFFFFF";
-                ctx.fillRect(x, y, w, h);
+                ctx.fillRect(minX, minY, w, h);
               } else if (shape.type === "rect") {
                 ctx.strokeStyle = shape.color;
-                ctx.lineWidth = shape.width;
-                ctx.strokeRect(x, y, w, h);
+                ctx.lineWidth = shape.width * scaleX;
+                ctx.strokeRect(minX, minY, w, h);
               } else if (shape.type === "circle") {
                 ctx.strokeStyle = shape.color;
-                ctx.lineWidth = shape.width;
+                ctx.lineWidth = shape.width * scaleX;
                 ctx.beginPath();
-                ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+                ctx.ellipse(minX + w / 2, minY + h / 2, w / 2, h / 2, 0, 0, 2 * Math.PI);
+                ctx.stroke();
+              } else if (shape.type === "line") {
+                ctx.strokeStyle = shape.color;
+                ctx.lineWidth = shape.width * scaleX;
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(ex, ey);
                 ctx.stroke();
               } else if (shape.type === "arrow") {
                 ctx.strokeStyle = shape.color;
                 ctx.fillStyle = shape.color;
-                ctx.lineWidth = shape.width;
+                ctx.lineWidth = shape.width * scaleX;
                 ctx.beginPath();
-                ctx.moveTo(shape.startX, shape.startY);
-                ctx.lineTo(shape.endX, shape.endY);
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(ex, ey);
                 ctx.stroke();
-                const angle = Math.atan2(
-                  shape.endY - shape.startY,
-                  shape.endX - shape.startX
-                );
-                const headlen = 14;
+                const angle = Math.atan2(ey - sy, ex - sx);
+                const headlen = 14 * scaleX;
                 ctx.beginPath();
-                ctx.moveTo(shape.endX, shape.endY);
+                ctx.moveTo(ex, ey);
                 ctx.lineTo(
-                  shape.endX - headlen * Math.cos(angle - Math.PI / 6),
-                  shape.endY - headlen * Math.sin(angle - Math.PI / 6)
+                  ex - headlen * Math.cos(angle - Math.PI / 6),
+                  ey - headlen * Math.sin(angle - Math.PI / 6)
                 );
                 ctx.lineTo(
-                  shape.endX - headlen * Math.cos(angle + Math.PI / 6),
-                  shape.endY - headlen * Math.sin(angle + Math.PI / 6)
+                  ex - headlen * Math.cos(angle + Math.PI / 6),
+                  ey - headlen * Math.sin(angle + Math.PI / 6)
                 );
                 ctx.closePath();
                 ctx.fill();
@@ -959,34 +1257,67 @@ export function PdfEditorClient() {
                 imgEl.onload = res;
                 imgEl.onerror = res;
               });
-              ctx.drawImage(imgEl, imgItem.x, imgItem.y, imgItem.width, imgItem.height);
+              ctx.drawImage(
+                imgEl,
+                imgItem.x * scaleX,
+                imgItem.y * scaleY,
+                imgItem.width * scaleX,
+                imgItem.height * scaleY
+              );
             }
 
             // Draw text items
             for (const textItem of pageAnnot.texts) {
               ctx.save();
-              ctx.font = `${textItem.fontSize}px ${textItem.fontFamily}`;
+              const scaledFontSize = textItem.fontSize * scaleX;
+              const fontStyle = textItem.isItalic ? "italic" : "normal";
+              const fontWeight = textItem.isBold ? "bold" : "normal";
+              ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${textItem.fontFamily}`;
+
+              const tx = textItem.x * scaleX;
+              const ty = (textItem.y + textItem.fontSize) * scaleY;
+
+              if (textItem.bgFill === "white") {
+                const textWidth = ctx.measureText(textItem.text).width;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(tx - 4, ty - scaledFontSize, textWidth + 8, scaledFontSize + 6);
+              } else if (textItem.bgFill === "yellow") {
+                const textWidth = ctx.measureText(textItem.text).width;
+                ctx.fillStyle = "#FEF08A";
+                ctx.fillRect(tx - 4, ty - scaledFontSize, textWidth + 8, scaledFontSize + 6);
+              }
+
               ctx.fillStyle = textItem.color;
-              ctx.fillText(textItem.text, textItem.x, textItem.y + textItem.fontSize);
+              ctx.fillText(textItem.text, tx, ty);
               ctx.restore();
             }
 
-            // Embed into PDF page
+            // Embed PNG overlay into PDF
             const pngDataUrl = exportCanvas.toDataURL("image/png");
             const pngImage = await pdfDoc.embedPng(pngDataUrl);
             page.drawImage(pngImage, {
               x: 0,
               y: 0,
-              width: page.getWidth(),
-              height: page.getHeight(),
+              width: pdfWidth,
+              height: pdfHeight,
             });
           }
         }
       }
 
-      // Save modified PDF
+      // 2. Remove deleted pages (in descending order to preserve indices)
+      const sortedDeleted = Array.from(deletedPages).sort((a, b) => b - a);
+      for (const delPageNum of sortedDeleted) {
+        if (delPageNum >= 1 && delPageNum <= pdfDoc.getPageCount()) {
+          pdfDoc.removePage(delPageNum - 1);
+        }
+      }
+
+      // Save and trigger download
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
+      const blob = new Blob([pdfBytes as unknown as BlobPart], {
+        type: "application/pdf",
+      });
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const baseName = file?.name?.replace(/\.[^/.]+$/, "") || "document";
@@ -1023,7 +1354,6 @@ export function PdfEditorClient() {
       ctx.drawImage(pdfCanvas, 0, 0);
       if (annotCanvas) ctx.drawImage(annotCanvas, 0, 0);
 
-      // Draw texts and images
       const annots = getPageAnnots(currentPage);
       for (const t of annots.texts) {
         ctx.font = `${t.fontSize}px ${t.fontFamily}`;
@@ -1040,7 +1370,7 @@ export function PdfEditorClient() {
       link.download = `page-${currentPage}.png`;
       link.href = merged.toDataURL("image/png");
       link.click();
-      notify.success(`Page ${currentPage} exported as PNG`);
+      notify.success(`Page ${currentPage} exported as PNG image.`);
     }
   };
 
@@ -1060,13 +1390,17 @@ export function PdfEditorClient() {
 
   return (
     <div className={styles.container}>
-      {/* Hidden file inputs */}
+      {/* Hidden file inputs with value resetting */}
       <input
         ref={fileInputRef}
         type="file"
         accept="application/pdf,.pdf"
         style={{ display: "none" }}
-        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+        onChange={(e) => {
+          if (e.target.files?.[0]) {
+            handleFileUpload(e.target.files[0]);
+          }
+        }}
       />
       <input
         ref={imageUploadRef}
@@ -1083,7 +1417,12 @@ export function PdfEditorClient() {
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrop={onDrop}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+              fileInputRef.current.click();
+            }
+          }}
         >
           <div className={styles.uploadIconWrap}>
             <svg
@@ -1118,7 +1457,12 @@ export function PdfEditorClient() {
             <button
               type="button"
               className={styles.primaryBtn}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                  fileInputRef.current.click();
+                }
+              }}
               disabled={loading}
             >
               {loading ? (
@@ -1210,9 +1554,23 @@ export function PdfEditorClient() {
               <button
                 type="button"
                 className={styles.sampleBtn}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                    fileInputRef.current.click();
+                  }
+                }}
+                title="Open a different PDF file"
               >
-                Upload Another
+                📂 Upload Another
+              </button>
+              <button
+                type="button"
+                className={styles.sampleBtn}
+                onClick={handleCloseDocument}
+                title="Close document and return to upload screen"
+              >
+                ✕ Close
               </button>
               <button
                 type="button"
@@ -1247,40 +1605,50 @@ export function PdfEditorClient() {
 
           {/* Main Layout: Sidebar + Viewport */}
           <div className={styles.mainLayout}>
-            {/* Sidebar with page thumbnails */}
+            {/* Sidebar with page thumbnails & page actions */}
             <aside className={styles.sidebar}>
-              <span className={styles.sidebarTitle}>Document Pages</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span className={styles.sidebarTitle}>Pages ({numPages})</span>
+              </div>
+
               <div className={styles.thumbnailList}>
-                {Array.from({ length: numPages }, (_, i) => i + 1).map((pNum) => (
-                  <div
-                    key={pNum}
-                    className={`${styles.thumbnailItem} ${
-                      pNum === currentPage ? styles.activeThumbnail : ""
-                    }`}
-                    onClick={() => setCurrentPage(pNum)}
-                  >
+                {Array.from({ length: numPages }, (_, i) => i + 1).map((pNum) => {
+                  const isDeleted = deletedPages.has(pNum);
+                  return (
                     <div
+                      key={pNum}
+                      className={`${styles.thumbnailItem} ${
+                        pNum === currentPage ? styles.activeThumbnail : ""
+                      }`}
                       style={{
-                        width: "100%",
-                        aspectRatio: "3/4",
-                        background: pNum === currentPage ? "#f8fafc" : "#ffffff",
-                        border: "1px solid rgba(0,0,0,0.1)",
-                        borderRadius: "6px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#64748b",
-                        fontSize: "0.8rem",
-                        fontWeight: 700,
-                        transform: `rotate(${pageRotations[pNum] || 0}deg)`,
-                        transition: "transform 0.2s ease",
+                        opacity: isDeleted ? 0.4 : 1,
+                        textDecoration: isDeleted ? "line-through" : "none",
                       }}
+                      onClick={() => !isDeleted && setCurrentPage(pNum)}
                     >
-                      Page {pNum}
+                      <div
+                        style={{
+                          width: "100%",
+                          aspectRatio: "3/4",
+                          background: pNum === currentPage ? "#f8fafc" : "#ffffff",
+                          border: "1px solid rgba(0,0,0,0.1)",
+                          borderRadius: "6px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: isDeleted ? "#ef4444" : "#64748b",
+                          fontSize: "0.8rem",
+                          fontWeight: 700,
+                          transform: `rotate(${pageRotations[pNum] || 0}deg)`,
+                          transition: "transform 0.2s ease",
+                        }}
+                      >
+                        {isDeleted ? "DELETED" : `Page ${pNum}`}
+                      </div>
+                      <span className={styles.thumbnailNumber}>Page {pNum}</span>
                     </div>
-                    <span className={styles.thumbnailNumber}>Page {pNum}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </aside>
 
@@ -1295,9 +1663,9 @@ export function PdfEditorClient() {
                       activeTool === "select" ? styles.activeTool : ""
                     }`}
                     onClick={() => setActiveTool("select")}
-                    title="Select & Move Items"
+                    title="Select, Drag & Move Elements (Esc)"
                   >
-                    👆 Move
+                    👆 Move / Select
                   </button>
                   <button
                     type="button"
@@ -1307,7 +1675,7 @@ export function PdfEditorClient() {
                     onClick={() => setActiveTool("text")}
                     title="Add Text"
                   >
-                    🔤 Text
+                    🔤 Add Text
                   </button>
                   <button
                     type="button"
@@ -1329,6 +1697,16 @@ export function PdfEditorClient() {
                   >
                     🖍️ Highlight
                   </button>
+                  <button
+                    type="button"
+                    className={`${styles.toolBtn} ${
+                      activeTool === "line" ? styles.activeTool : ""
+                    }`}
+                    onClick={() => setActiveTool("line")}
+                    title="Straight Line"
+                  >
+                    📏 Line
+                  </button>
 
                   <div className={styles.toolDivider} />
 
@@ -1338,7 +1716,7 @@ export function PdfEditorClient() {
                       activeTool === "rect" ? styles.activeTool : ""
                     }`}
                     onClick={() => setActiveTool("rect")}
-                    title="Rectangle Box"
+                    title="Rectangle Frame"
                   >
                     ▭ Box
                   </button>
@@ -1348,7 +1726,7 @@ export function PdfEditorClient() {
                       activeTool === "circle" ? styles.activeTool : ""
                     }`}
                     onClick={() => setActiveTool("circle")}
-                    title="Circle / Ellipse"
+                    title="Circle"
                   >
                     ⭕ Circle
                   </button>
@@ -1401,6 +1779,30 @@ export function PdfEditorClient() {
                   >
                     🏷️ Stamp
                   </button>
+                  <button
+                    type="button"
+                    className={styles.toolBtn}
+                    onClick={handleInsertTodayDate}
+                    title="Insert Today's Date"
+                  >
+                    📅 Add Date
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.toolBtn}
+                    onClick={() => handleInsertCheckmark("check")}
+                    title="Insert Checkmark on Checkbox"
+                  >
+                    ✔ Check
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.toolBtn}
+                    onClick={() => handleInsertCheckmark("cross")}
+                    title="Insert Crossmark"
+                  >
+                    ✖ Cross
+                  </button>
                 </div>
 
                 <div className={styles.toolGroup}>
@@ -1408,17 +1810,34 @@ export function PdfEditorClient() {
                     type="button"
                     className={styles.toolBtn}
                     onClick={handleRotatePage}
-                    title="Rotate page 90°"
+                    title="Rotate active page 90°"
                   >
-                    🔄 Rotate
+                    🔄 Rotate Page
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.toolBtn}
+                    onClick={handleRotateAllPages}
+                    title="Rotate all pages 90°"
+                  >
+                    🔁 Rotate All
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.toolBtn}
+                    style={{ color: "#ef4444" }}
+                    onClick={handleDeleteCurrentPage}
+                    title="Delete active page"
+                  >
+                    🗑️ Delete Page
                   </button>
                   <button
                     type="button"
                     className={styles.toolBtn}
                     onClick={handleClearPage}
-                    title="Clear page annotations"
+                    title="Clear active page annotations"
                   >
-                    🗑️ Clear
+                    🧹 Clear
                   </button>
                 </div>
               </div>
@@ -1457,6 +1876,7 @@ export function PdfEditorClient() {
                 {(activeTool === "draw" ||
                   activeTool === "rect" ||
                   activeTool === "circle" ||
+                  activeTool === "line" ||
                   activeTool === "arrow") && (
                   <div className={styles.sliderWrap}>
                     <span>Line Width:</span>
@@ -1472,28 +1892,85 @@ export function PdfEditorClient() {
                   </div>
                 )}
 
-                {/* Font size */}
+                {/* Text Tool Options */}
                 {activeTool === "text" && (
-                  <div className={styles.sliderWrap}>
-                    <span>Font Size:</span>
-                    <select
-                      value={fontSize}
-                      onChange={(e) => setFontSize(Number(e.target.value))}
+                  <>
+                    <div className={styles.sliderWrap}>
+                      <span>Size:</span>
+                      <select
+                        value={fontSize}
+                        onChange={(e) => setFontSize(Number(e.target.value))}
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: "8px",
+                          background: "rgba(0,0,0,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: "inherit",
+                        }}
+                      >
+                        {[12, 14, 16, 18, 22, 28, 36, 48].map((s) => (
+                          <option key={s} value={s}>
+                            {s}px
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className={styles.sliderWrap}>
+                      <span>Font:</span>
+                      <select
+                        value={fontFamily}
+                        onChange={(e) => setFontFamily(e.target.value)}
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: "8px",
+                          background: "rgba(0,0,0,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: "inherit",
+                        }}
+                      >
+                        <option value="sans-serif">Sans-Serif</option>
+                        <option value="serif">Serif (Times)</option>
+                        <option value="monospace">Monospace</option>
+                        <option value="cursive">Cursive Script</option>
+                      </select>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={styles.toolBtn}
                       style={{
-                        padding: "4px 8px",
-                        borderRadius: "8px",
-                        background: "rgba(0,0,0,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        color: "inherit",
+                        fontWeight: 700,
+                        background: isBold ? "rgba(239, 68, 68, 0.15)" : "transparent",
                       }}
+                      onClick={() => setIsBold((b) => !b)}
                     >
-                      {[12, 14, 16, 18, 22, 28, 36, 48].map((s) => (
-                        <option key={s} value={s}>
-                          {s}px
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.toolBtn}
+                      style={{
+                        fontStyle: "italic",
+                        background: isItalic ? "rgba(239, 68, 68, 0.15)" : "transparent",
+                      }}
+                      onClick={() => setIsItalic((i) => !i)}
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.toolBtn}
+                      onClick={() =>
+                        setTextBgFill((f) =>
+                          f === "none" ? "white" : f === "white" ? "yellow" : "none"
+                        )
+                      }
+                      title="Toggle background highlight fill behind text"
+                    >
+                      🎨 Highlight: {textBgFill.toUpperCase()}
+                    </button>
+                  </>
                 )}
 
                 {/* Zoom Controls */}
@@ -1552,6 +2029,7 @@ export function PdfEditorClient() {
                           : activeTool === "text"
                           ? "text"
                           : "crosshair",
+                      pointerEvents: activeTool === "select" ? "none" : "auto",
                     }}
                   />
 
@@ -1559,25 +2037,55 @@ export function PdfEditorClient() {
                   {getPageAnnots(currentPage).texts.map((item) => (
                     <div
                       key={item.id}
-                      className={styles.textItem}
+                      className={`${styles.textItem} ${
+                        selectedItemId === item.id ? styles.selectedItem : ""
+                      }`}
                       style={{
                         left: item.x,
                         top: item.y,
                         fontSize: `${item.fontSize}px`,
                         color: item.color,
                         fontFamily: item.fontFamily,
+                        fontWeight: item.isBold ? "bold" : "normal",
+                        fontStyle: item.isItalic ? "italic" : "normal",
+                        backgroundColor:
+                          item.bgFill === "white"
+                            ? "#FFFFFF"
+                            : item.bgFill === "yellow"
+                            ? "#FEF08A"
+                            : "transparent",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItemId(item.id);
                       }}
                     >
+                      {/* DRAG HANDLE BAR */}
+                      <div
+                        className={styles.dragHandle}
+                        onPointerDown={(e) =>
+                          startDragItem(e, item.id, "text", item.x, item.y)
+                        }
+                        title="Click and drag to move text anywhere"
+                      >
+                        <span>⠿ Drag</span>
+                      </div>
+
                       <input
                         className={styles.textInputInline}
                         value={item.text}
                         onChange={(e) => handleUpdateText(item.id, e.target.value)}
                         style={{ color: item.color }}
+                        onClick={(e) => e.stopPropagation()}
                       />
+
                       <button
                         type="button"
                         className={styles.deleteItemBtn}
-                        onClick={() => handleDeleteText(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteText(item.id);
+                        }}
                         title="Delete text"
                       >
                         ✕
@@ -1589,24 +2097,55 @@ export function PdfEditorClient() {
                   {getPageAnnots(currentPage).images.map((item) => (
                     <div
                       key={item.id}
-                      className={styles.placedImageItem}
+                      className={`${styles.placedImageItem} ${
+                        selectedItemId === item.id ? styles.selectedItem : ""
+                      }`}
                       style={{
                         left: item.x,
                         top: item.y,
                         width: item.width,
                         height: item.height,
                       }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItemId(item.id);
+                      }}
                     >
+                      {/* DRAG HANDLE */}
+                      <div
+                        className={styles.imageDragHandle}
+                        onPointerDown={(e) =>
+                          startDragItem(e, item.id, "image", item.x, item.y)
+                        }
+                        title="Drag to position signature/stamp"
+                      >
+                        ⠿ Drag
+                      </div>
+
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.dataUrl}
                         alt="Placed annotation"
                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        draggable={false}
                       />
+
+                      {/* RESIZE HANDLE */}
+                      <div
+                        className={styles.resizeHandle}
+                        onPointerDown={(e) =>
+                          startResizeImage(e, item.id, item.width, item.height)
+                        }
+                        title="Drag to resize"
+                      />
+
                       <button
                         type="button"
                         className={styles.deleteItemBtn}
-                        onClick={() => handleDeleteImage(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteImage(item.id);
+                        }}
                         title="Delete item"
                       >
                         ✕
@@ -1645,8 +2184,7 @@ export function PdfEditorClient() {
                 </div>
 
                 <div style={{ color: "var(--text-muted, #94a3b8)", fontSize: "0.85rem" }}>
-                  Active tool: <strong>{activeTool.toUpperCase()}</strong> • Click and drag on
-                  document to apply changes
+                  Active tool: <strong>{activeTool.toUpperCase()}</strong> • Use <strong>Move / Select</strong> to drag text, stamps & signatures.
                 </div>
               </div>
             </main>
@@ -1843,7 +2381,12 @@ export function PdfEditorClient() {
               <button
                 type="button"
                 className={styles.sampleBtn}
-                onClick={() => imageUploadRef.current?.click()}
+                onClick={() => {
+                  if (imageUploadRef.current) {
+                    imageUploadRef.current.value = "";
+                    imageUploadRef.current.click();
+                  }
+                }}
               >
                 Upload PNG / JPG Image
               </button>

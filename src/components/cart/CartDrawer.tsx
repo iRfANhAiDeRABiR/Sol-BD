@@ -6,25 +6,65 @@ import Image from 'next/image';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, Zap, ShieldCheck } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useCartStore } from '@/lib/cart-store';
+import { useCart } from '@/components/cart/CartProvider';
 import { formatPrice, formatImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function CartDrawer() {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
-  const {
-    items,
-    isOpen,
-    closeCart,
-    updateQuantity,
-    removeItem,
-    subtotal,
-    total,
-    discountAmount,
-    couponCode,
-    applyCoupon,
-    removeCoupon,
-  } = useCartStore();
+
+  const contextCart = useCart();
+  const zustandCart = useCartStore();
+
+  const { isOpen, closeCart } = zustandCart;
+
+  // Active items: prefer CartProvider, fallback to zustand
+  const activeItems =
+    contextCart.items.length > 0
+      ? contextCart.items
+      : zustandCart.items.map((z) => ({
+          productId: z.productId,
+          slug: z.productSlug || '',
+          name: z.productTitle || 'Digital License',
+          image: z.image,
+          price: z.price,
+          originalPrice: z.originalPrice,
+          optionId: z.variantId,
+          optionName: z.variantName,
+          quantity: z.quantity,
+          variantId: z.variantId,
+          variantName: z.variantName,
+          productTitle: z.productTitle,
+          productSlug: z.productSlug,
+          validity: z.validity,
+          licenseType: z.licenseType,
+        }));
+
+  const totalCount =
+    contextCart.totalCount ||
+    zustandCart.totalItems() ||
+    activeItems.reduce((acc, i) => acc + i.quantity, 0);
+
+  const subtotal =
+    contextCart.items.length > 0
+      ? contextCart.subtotal
+      : zustandCart.items.length > 0
+      ? zustandCart.subtotal()
+      : activeItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
+
+  const discountAmount =
+    contextCart.items.length > 0 ? contextCart.discountAmount : zustandCart.discountAmount;
+
+  const couponCode =
+    contextCart.items.length > 0 ? contextCart.couponCode : zustandCart.couponCode;
+
+  const total =
+    contextCart.items.length > 0
+      ? contextCart.total
+      : zustandCart.items.length > 0
+      ? zustandCart.total()
+      : Math.max(0, subtotal - discountAmount);
 
   const [inputCoupon, setInputCoupon] = useState('');
 
@@ -36,16 +76,44 @@ export default function CartDrawer() {
     if (!code) return;
 
     if (code === 'WELCOME10') {
-      const discount = Math.round(subtotal() * 0.1);
-      applyCoupon(code, discount);
+      const discount = Math.round(subtotal * 0.1);
+      contextCart.applyCoupon(code, discount);
+      zustandCart.applyCoupon(code, discount);
       toast.success('Coupon WELCOME10 applied! 10% discount added.');
       setInputCoupon('');
     } else if (code === 'EID50') {
-      applyCoupon(code, 50);
+      contextCart.applyCoupon(code, 50);
+      zustandCart.applyCoupon(code, 50);
       toast.success('Coupon EID50 applied! ৳50 discount added.');
       setInputCoupon('');
     } else {
       toast.error('Invalid coupon code.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    contextCart.removeCoupon();
+    zustandCart.removeCoupon();
+  };
+
+  const handleRemoveItem = (item: any) => {
+    const targetVariantId = item.variantId || item.optionId;
+    contextCart.removeItem(item.productId, targetVariantId);
+    if (targetVariantId) {
+      zustandCart.removeItem(targetVariantId);
+    } else {
+      zustandCart.removeItem(item.productId);
+    }
+    toast.success('Removed from cart');
+  };
+
+  const handleUpdateQuantity = (item: any, newQty: number) => {
+    const targetVariantId = item.variantId || item.optionId;
+    contextCart.updateQuantity(item.productId, newQty, targetVariantId);
+    if (targetVariantId) {
+      zustandCart.updateQuantity(targetVariantId, newQty);
+    } else {
+      zustandCart.updateQuantity(item.productId, newQty);
     }
   };
 
@@ -65,7 +133,7 @@ export default function CartDrawer() {
               <ShoppingBag className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               <h2 className="font-bold text-slate-800 dark:text-white text-base">Your Cart</h2>
               <span className="bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 text-xs px-2 py-0.5 rounded-full font-bold">
-                {items.length} {items.length === 1 ? 'item' : 'items'}
+                {totalCount} {totalCount === 1 ? 'item' : 'items'}
               </span>
             </div>
             <button
@@ -84,7 +152,7 @@ export default function CartDrawer() {
 
           {/* Items List */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {items.length === 0 ? (
+            {activeItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
                 <div className="w-16 h-16 rounded-full bg-violet-50 dark:bg-violet-950/60 flex items-center justify-center text-violet-500">
                   <ShoppingBag className="w-8 h-8" />
@@ -93,83 +161,91 @@ export default function CartDrawer() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
                   Browse our genuine Windows, Office, IDM, and Antivirus digital licenses.
                 </p>
-                <button
+                <Link
+                  href="/shop"
                   onClick={closeCart}
                   className="brand-gradient-btn text-white text-xs font-bold px-4 py-2 rounded-xl mt-2"
                 >
                   Explore Catalog
-                </button>
+                </Link>
               </div>
             ) : (
-              items.map((item) => (
-                <div
-                  key={item.variantId}
-                  className="flex gap-3 bg-slate-50/70 dark:bg-slate-900/70 p-3 rounded-2xl border border-slate-200/60 dark:border-white/[0.08]"
-                >
-                  {/* Thumbnail */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 flex-shrink-0 relative border border-slate-200 dark:border-white/[0.08]">
-                    <Image
-                      src={formatImageUrl(item.image)}
-                      alt={item.productTitle || 'Product'}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+              activeItems.map((item, idx) => {
+                const key = item.variantId || item.optionId || `${item.productId}-${idx}`;
+                const title = item.productTitle || item.name || 'Digital License';
+                const variant = item.variantName || item.optionName || 'Standard';
+                const imageUrl = formatImageUrl(item.image);
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">
-                      {item.productTitle}
-                    </h4>
-                    <p className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 mt-0.5 truncate">
-                      {item.variantName}
-                    </p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                        {formatPrice(item.price)}
-                      </span>
-                      {item.originalPrice && (
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 line-through">
-                          {formatPrice(item.originalPrice)}
+                return (
+                  <div
+                    key={key}
+                    className="flex gap-3 bg-slate-50/70 dark:bg-slate-900/70 p-3 rounded-2xl border border-slate-200/60 dark:border-white/[0.08]"
+                  >
+                    {/* Thumbnail */}
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 flex-shrink-0 relative border border-slate-200 dark:border-white/[0.08]">
+                      <Image
+                        src={imageUrl}
+                        alt={title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                        {title}
+                      </h4>
+                      <p className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 mt-0.5 truncate">
+                        {variant}
+                      </p>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="font-extrabold text-sm text-slate-900 dark:text-white">
+                          {formatPrice(item.price)}
                         </span>
-                      )}
+                        {item.originalPrice && item.originalPrice > item.price && (
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 line-through">
+                            {formatPrice(item.originalPrice)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Quantity & Delete */}
-                  <div className="flex flex-col items-end justify-between">
-                    <button
-                      onClick={() => removeItem(item.variantId)}
-                      className="text-slate-400 hover:text-red-500 p-1 transition-colors"
-                      title="Remove"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] rounded-lg px-1.5 py-0.5 shadow-sm">
+                    {/* Quantity & Delete */}
+                    <div className="flex flex-col items-end justify-between">
                       <button
-                        onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                        className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
+                        onClick={() => handleRemoveItem(item)}
+                        className="text-slate-400 hover:text-red-500 p-1 transition-colors"
+                        title="Remove"
                       >
-                        <Minus className="w-3 h-3" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                      <span className="text-xs font-bold w-4 text-center text-slate-900 dark:text-white">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                        className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] rounded-lg px-1.5 py-0.5 shadow-sm">
+                        <button
+                          onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
+                          className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold w-4 text-center text-slate-900 dark:text-white">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                          className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
           {/* Footer & Checkout Area */}
-          {items.length > 0 && (
+          {activeItems.length > 0 && (
             <div className="p-4 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/60 dark:bg-slate-900/60 space-y-3">
               {/* Coupon Form */}
               {couponCode ? (
@@ -179,7 +255,7 @@ export default function CartDrawer() {
                     <span>Applied: <strong>{couponCode}</strong> (-{formatPrice(discountAmount)})</span>
                   </div>
                   <button
-                    onClick={removeCoupon}
+                    onClick={handleRemoveCoupon}
                     className="text-slate-400 hover:text-red-500 text-xs underline"
                   >
                     Remove
@@ -207,7 +283,7 @@ export default function CartDrawer() {
               <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400 pt-1">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-slate-900 dark:text-white">{formatPrice(subtotal())}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{formatPrice(subtotal)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
@@ -217,7 +293,7 @@ export default function CartDrawer() {
                 )}
                 <div className="flex justify-between text-sm font-extrabold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-white/[0.08]">
                   <span>Total Payable</span>
-                  <span className="text-base text-violet-700 dark:text-violet-400">{formatPrice(total())}</span>
+                  <span className="text-base text-violet-700 dark:text-violet-400">{formatPrice(total)}</span>
                 </div>
               </div>
 

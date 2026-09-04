@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { formatImageUrl } from '@/lib/utils';
+import { useCartStore } from '@/lib/cart-store';
 
 export interface CartItem {
   productId: string;
@@ -56,8 +57,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const sanitized = parsed.map((item: any) => ({
             ...item,
             image: formatImageUrl(item.image),
+            name: item.name || item.productTitle || 'Digital License',
+            productTitle: item.productTitle || item.name || 'Digital License',
+            slug: item.slug || item.productSlug || '',
+            productSlug: item.productSlug || item.slug || '',
+            optionName: item.optionName || item.variantName || 'Standard',
+            variantName: item.variantName || item.optionName || 'Standard',
+            optionId: item.optionId || item.variantId,
+            variantId: item.variantId || item.optionId,
           }));
           setItems(sanitized);
+
+          // Keep zustand store in sync
+          useCartStore.setState({
+            items: sanitized.map((i: any) => ({
+              variantId: i.variantId || i.optionId || i.productId,
+              productId: i.productId,
+              productTitle: i.productTitle,
+              productSlug: i.slug || i.productSlug || '',
+              variantName: i.variantName,
+              price: i.price,
+              originalPrice: i.originalPrice,
+              image: i.image,
+              validity: i.validity || 'Lifetime',
+              licenseType: i.licenseType || 'LICENSE_KEY',
+              quantity: i.quantity,
+            })),
+          });
         }
       }
     } catch (e) {
@@ -75,6 +101,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.error('Failed to persist cart to localStorage', e);
       }
+      // Also synchronize zustand items
+      useCartStore.setState({
+        items: items.map((item) => ({
+          variantId: item.variantId || item.optionId || item.productId,
+          productId: item.productId,
+          productTitle: item.productTitle || item.name || 'Digital License',
+          productSlug: item.productSlug || item.slug || '',
+          variantName: item.variantName || item.optionName || 'Standard',
+          price: item.price,
+          originalPrice: item.originalPrice,
+          image: item.image,
+          validity: item.validity || 'Lifetime',
+          licenseType: item.licenseType || 'LICENSE_KEY',
+          quantity: item.quantity,
+        })),
+      });
     }
   }, [items, isLoaded]);
 
@@ -104,8 +146,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           quantity,
           optionId: item.optionId || item.variantId,
           variantId: item.variantId || item.optionId,
-          name: item.name || item.productTitle || 'Product',
+          name: item.name || item.productTitle || 'Digital License',
+          productTitle: item.productTitle || item.name || 'Digital License',
           slug: item.slug || item.productSlug || '',
+          productSlug: item.productSlug || item.slug || '',
+          variantName: item.variantName || item.optionName || 'Standard',
+          optionName: item.optionName || item.variantName || 'Standard',
         },
       ];
     });
@@ -147,6 +193,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
     setCouponCode(null);
     setDiscountAmount(0);
+    try {
+      localStorage.removeItem('store_cart');
+    } catch {}
+    useCartStore.getState().clearCart();
   };
 
   const applyCoupon = (code: string, discount: number) => {

@@ -443,20 +443,6 @@ Browse privately, bypass geo-restrictions, and secure public Wi-Fi on up to 6 de
     },
   });
 
-  await prisma.user.upsert({
-    where: { email: 'admin@solutionsbd.com' },
-    update: {
-      role: 'ADMIN',
-      name: 'Irfan (SolutionsBD Staff)',
-    },
-    create: {
-      email: 'admin@solutionsbd.com',
-      name: 'Irfan (SolutionsBD Staff)',
-      phone: '+8801410699879',
-      role: 'ADMIN',
-      password: 'admin123',
-    },
-  });
 
   // 5. Create Sample Orders & Payments for Dashboard Analytics
   const sampleVariantWin = await prisma.productVariant.findFirst({

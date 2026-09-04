@@ -187,7 +187,7 @@ export default function AdminSidebar({
                 {adminName || 'Admin'}
               </span>
               <span className="text-[10px] text-slate-400 block truncate">
-                {adminEmail || 'admin@solutionsbd.com'}
+                {adminEmail || 'solutionsbd247@gmail.com'}
               </span>
             </div>
           </div>

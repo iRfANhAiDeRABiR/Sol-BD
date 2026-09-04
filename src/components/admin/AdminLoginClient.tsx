@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, Lock, Mail, ArrowRight, KeyRound } from 'lucide-react';
+import { ShieldCheck, Sparkles, Lock, Mail, ArrowRight } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { loginAdminAction } from '@/app/admin/actions';
 import { toast } from 'sonner';
@@ -11,12 +11,6 @@ export default function AdminLoginClient() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const fillDemo = () => {
-    setEmail('solutionsbd247@gmail.com');
-    setPassword('t18gzykHw9YyWzh9');
-    toast.success('Loaded Owner credentials!');
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,7 +88,7 @@ export default function AdminLoginClient() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="solutionsbd247@gmail.com"
+                  placeholder="admin@example.com"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
               </div>
@@ -126,19 +120,6 @@ export default function AdminLoginClient() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Demo Helper */}
-          <div className="pt-4 border-t border-slate-100 dark:border-white/[0.05] text-center space-y-2">
-            <span className="text-[11px] text-slate-400 block">Need fast testing access?</span>
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-violet-50 dark:hover:bg-violet-950/40 text-violet-600 dark:text-violet-400 text-xs font-bold transition-colors"
-            >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Fill Seeded Owner Credentials</span>
-            </button>
-          </div>
         </div>
       </div>
 

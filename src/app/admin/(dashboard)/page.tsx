@@ -213,7 +213,7 @@ export default async function AdminOverviewPage() {
             dbLatencyMs={dbLatencyMs}
             dbType="SQLite Engine (Prisma ORM)"
             adminRole={session?.role || 'OWNER'}
-            adminName={session?.name || 'Irfan'}
+            adminName={session?.name || 'SolutionsBD Admin'}
             totalKeysInStock={availableKeysCount}
           />
 

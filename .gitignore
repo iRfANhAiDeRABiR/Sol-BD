@@ -35,4 +35,5 @@ next-env.d.ts
 
 # agents & database
 .agents/
+*.db
 *.db-journal

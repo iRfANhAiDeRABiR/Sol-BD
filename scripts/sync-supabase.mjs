@@ -79,13 +79,14 @@ async function main() {
       await client.query(
         `
         INSERT INTO public.users (
-          id, email, name, phone, password, role, wallet_balance, loyalty_points, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          id, email, name, phone, password, role, is_active, wallet_balance, loyalty_points, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         ON CONFLICT (email) DO UPDATE SET
           name = EXCLUDED.name,
           phone = EXCLUDED.phone,
           password = EXCLUDED.password,
           role = EXCLUDED.role,
+          is_active = EXCLUDED.is_active,
           wallet_balance = EXCLUDED.wallet_balance,
           loyalty_points = EXCLUDED.loyalty_points,
           updated_at = EXCLUDED.updated_at;
@@ -97,6 +98,7 @@ async function main() {
           u.phone,
           u.password,
           u.role,
+          u.isActive !== undefined ? u.isActive : true,
           u.walletBalance || 0,
           u.loyaltyPoints || 0,
           u.createdAt,

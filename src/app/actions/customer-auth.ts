@@ -44,7 +44,7 @@ export async function registerCustomerAction(data: {
 
     let user;
     if (existing) {
-      if (existing.isActive === false) {
+      if ((existing as any).isActive === false) {
         return { error: 'This account has been suspended by an administrator. Please contact customer support.' };
       }
       if (existing.password) {
@@ -142,7 +142,7 @@ export async function loginCustomerAction(data: {
       return { error: 'Invalid email/phone or password. Please check your credentials.' };
     }
 
-    if (user.isActive === false) {
+    if ((user as any).isActive === false) {
       return {
         error: 'Your account has been suspended by an administrator. Please contact customer support.',
       };

@@ -34,7 +34,7 @@ export default async function CustomerAccountPage() {
     },
   });
 
-  if (!user || user.isActive === false) {
+  if (!user || (user as any).isActive === false) {
     await clearCustomerSession();
     redirect('/login?suspended=1');
   }

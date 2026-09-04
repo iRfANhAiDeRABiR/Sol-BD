@@ -818,11 +818,11 @@ export async function toggleUserSuspensionAction(userId: string) {
       return { error: 'Security restriction: The OWNER account cannot be suspended.' };
     }
 
-    const nextState = !targetUser.isActive;
+    const nextState = !(targetUser as any).isActive;
 
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: { isActive: nextState },
+      data: { isActive: nextState } as any,
     });
 
     // Asynchronously update Supabase in background

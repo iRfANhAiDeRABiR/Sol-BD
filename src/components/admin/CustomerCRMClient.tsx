@@ -924,7 +924,7 @@ export default function CustomerCRMClient({
 
                           {/* Ordered Items */}
                           <div className="space-y-1 text-[11px]">
-                            {o.items.map((item) => (
+                            {o.items?.map((item: any) => (
                               <div key={item.id} className="flex justify-between text-slate-600 dark:text-slate-300">
                                 <span>
                                   {item.productName || 'Digital License'}{' '}

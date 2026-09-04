@@ -28,10 +28,15 @@ export default function Navbar() {
   const zustandTotal = useCartStore((state) => state.totalItems());
   const toggleCart = useCartStore((state) => state.toggleCart);
 
+  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customer, setCustomer] = useState<{ id: string; name: string; email: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch customer session whenever pathname changes
   useEffect(() => {
@@ -253,7 +258,7 @@ export default function Navbar() {
             >
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline">Cart</span>
-              {totalItems > 0 && (
+              {mounted && totalItems > 0 && (
                 <span className="bg-amber-400 text-slate-900 text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center -ml-0.5 shadow">
                   {totalItems}
                 </span>

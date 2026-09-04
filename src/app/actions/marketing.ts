@@ -81,3 +81,4 @@ export async function submitContactMessageAction(data: {
     return { error: err.message || 'Failed to send message. Please try again.' };
   }
 }
+

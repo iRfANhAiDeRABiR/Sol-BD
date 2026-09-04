@@ -21,6 +21,7 @@ interface CartState {
   subtotal: () => number;
   total: () => number;
   totalItems: () => number;
+  hydrate: () => void;
 }
 
 function getInitialItems(): CartItem[] {
@@ -75,7 +76,7 @@ function syncToLocalStorage(items: CartItem[]) {
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
-  items: getInitialItems(),
+  items: [],
   isOpen: false,
   couponCode: null,
   discountAmount: 0,
@@ -147,6 +148,14 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   totalItems: () => {
     return get().items.reduce((sum, i) => sum + i.quantity, 0);
+  },
+
+  hydrate: () => {
+    if (typeof window === 'undefined') return;
+    const initial = getInitialItems();
+    if (initial.length > 0) {
+      set({ items: initial });
+    }
   },
 }));
 

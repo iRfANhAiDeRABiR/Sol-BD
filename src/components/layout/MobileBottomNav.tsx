@@ -12,6 +12,11 @@ export default function MobileBottomNav() {
   const { totalCount } = useCart();
   const zustandTotal = useCartStore((state) => state.totalItems());
   const toggleCartDrawer = useCartStore((state) => state.toggleCart);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Hide on admin routes
   if (pathname?.startsWith('/admin')) return null;
@@ -54,7 +59,7 @@ export default function MobileBottomNav() {
       >
         <div className="relative">
           <ShoppingCart className="w-5 h-5" />
-          {displayCount > 0 && (
+          {mounted && displayCount > 0 && (
             <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse shadow-sm">
               {displayCount}
             </span>

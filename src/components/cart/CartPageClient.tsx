@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -28,6 +28,11 @@ import { toast } from 'sonner';
 
 export default function CartPageClient() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const {
     items,
     updateQuantity,
@@ -207,6 +212,15 @@ export default function CartPageClient() {
       setSubmittingOrder(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+        <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-xs text-slate-400 font-medium">কার্ট লোড করা হচ্ছে...</p>
+      </div>
+    );
+  }
 
   if (activeItems.length === 0 && step === 1) {
     return (

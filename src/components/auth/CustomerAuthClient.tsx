@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Lock,
   Mail,
@@ -12,7 +13,6 @@ import {
   EyeOff,
   ShieldCheck,
   ShieldAlert,
-  Zap,
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
@@ -114,8 +114,16 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
       <div className="text-center mb-8">
         <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group select-none">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-lg shadow-violet-500/25 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center">
-              <Zap className="w-6 h-6 text-violet-600 fill-violet-600" />
+            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center p-1.5 overflow-hidden">
+              <Image
+                src="/favicon.ico"
+                alt="SolutionsBD Logo"
+                width={36}
+                height={36}
+                className="w-full h-full object-contain rounded-lg"
+                priority
+                unoptimized
+              />
             </div>
           </div>
         </Link>

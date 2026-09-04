@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -13,7 +14,6 @@ import {
   ExternalLink,
   ShieldCheck,
   LogOut,
-  Sparkles,
 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import { logoutAdminAction } from '@/app/admin/actions';
@@ -98,8 +98,17 @@ export default function AdminSidebar({
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2 pt-2">
           <Link href="/admin" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 p-0.5 flex items-center justify-center text-white shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+                <Image
+                  src="/favicon.ico"
+                  alt="SolutionsBD Logo"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-contain rounded-md"
+                  unoptimized
+                />
+              </div>
             </div>
             <div>
               <div className="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1">

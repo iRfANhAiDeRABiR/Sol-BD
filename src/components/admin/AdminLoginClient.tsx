@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, Sparkles, Lock, Mail, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, Lock, Mail, ArrowRight } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { loginAdminAction } from '@/app/admin/actions';
 import { toast } from 'sonner';
@@ -47,8 +48,17 @@ export default function AdminLoginClient() {
       {/* Top Bar with Theme Switch */}
       <div className="w-full max-w-7xl mx-auto p-6 flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center text-white shadow-md shadow-violet-600/30">
-            <Sparkles className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-md shadow-violet-600/30 flex items-center justify-center">
+            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+              <Image
+                src="/favicon.ico"
+                alt="SolutionsBD Logo"
+                width={20}
+                height={20}
+                className="w-full h-full object-contain rounded-sm"
+                unoptimized
+              />
+            </div>
           </div>
           <span className="font-extrabold text-sm tracking-tight">SolutionsBD</span>
         </div>

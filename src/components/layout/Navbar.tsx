@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ShoppingCart,
   Search,
   Menu,
   X,
-  Zap,
   User,
   Key,
   ShoppingBag,
@@ -100,8 +100,16 @@ export default function Navbar() {
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group select-none">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
-              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-violet-600 fill-violet-600" />
+              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+                <Image
+                  src="/favicon.ico"
+                  alt="SolutionsBD Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-contain rounded-md"
+                  priority
+                  unoptimized
+                />
               </div>
             </div>
             <div className="flex flex-col leading-tight">

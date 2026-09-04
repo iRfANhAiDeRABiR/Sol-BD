@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     locale: 'bn_BD',
     type: 'website',
   },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

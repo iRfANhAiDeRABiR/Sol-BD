@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Zap, ShieldCheck, Mail, Phone, MapPin, CheckCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Phone, MapPin, CheckCircle } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -16,8 +17,15 @@ export default function Footer() {
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-sky-500 p-0.5 flex items-center justify-center">
-                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-violet-400 fill-violet-400" />
+                <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+                  <Image
+                    src="/favicon.ico"
+                    alt="SolutionsBD Logo"
+                    width={28}
+                    height={28}
+                    className="w-full h-full object-contain rounded-md"
+                    unoptimized
+                  />
                 </div>
               </div>
               <div className="text-xl font-black">

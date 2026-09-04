@@ -52,8 +52,8 @@ export default async function HomePage() {
       <WhyChooseUs />
       <TestimonialsSection />
       <FAQSection />
-      <ContactSection />
       <NewsletterSection />
+      <ContactSection />
     </div>
   );
 }

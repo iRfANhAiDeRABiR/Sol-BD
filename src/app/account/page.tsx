@@ -1,7 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
-import { getCustomerSession } from '@/lib/customer-auth';
+import { getCustomerSession, clearCustomerSession } from '@/lib/customer-auth';
 import CustomerDashboardClient from '@/components/account/CustomerDashboardClient';
 
 export const dynamic = 'force-dynamic';
@@ -27,14 +27,16 @@ export default async function CustomerAccountPage() {
       name: true,
       phone: true,
       role: true,
+      isActive: true,
       walletBalance: true,
       loyaltyPoints: true,
       createdAt: true,
     },
   });
 
-  if (!user) {
-    redirect('/login?redirect=/account');
+  if (!user || user.isActive === false) {
+    await clearCustomerSession();
+    redirect('/login?suspended=1');
   }
 
   // Fetch all orders matching customer ID or customer email

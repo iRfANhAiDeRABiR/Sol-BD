@@ -11,6 +11,7 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  ShieldAlert,
   Zap,
   ArrowRight,
   Sparkles,
@@ -26,6 +27,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/account';
+  const isSuspended = searchParams.get('suspended') === '1';
 
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
@@ -129,6 +131,18 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
 
       {/* Card Container */}
       <div className="bg-white/95 dark:bg-slate-900/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-xl p-6 sm:p-8 backdrop-blur-xl">
+        {isSuspended && (
+          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 flex items-start gap-3 text-xs leading-relaxed">
+            <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-500" />
+            <div>
+              <p className="font-bold text-sm">Account Access Suspended</p>
+              <p className="mt-0.5 text-rose-600/90 dark:text-rose-400/90">
+                Your account has been suspended by administration. If you believe this is an error or require assistance, please contact SolutionsBD customer support.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tab Toggle */}
         <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl mb-6">
           <button

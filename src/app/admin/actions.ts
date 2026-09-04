@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getAdminSession, setAdminSession, clearAdminSession, AdminRole } from '@/lib/admin-auth';
+import { syncUserSuspensionToSupabase } from '@/lib/sync-user-supabase';
 
 // -------------------------------------------------------------
 // 1. Admin Authentication Server Actions
@@ -793,4 +794,97 @@ export async function toggleSubscriberAction(subscriberId: string) {
     return { error: err.message || 'Failed to toggle subscriber.' };
   }
 }
+
+// -------------------------------------------------------------
+// 8. User Control & Suspension Server Actions
+// -------------------------------------------------------------
+
+export async function toggleUserSuspensionAction(userId: string) {
+  const session = await getAdminSession();
+  if (!session) return { error: 'Unauthorized. Admin session required.' };
+
+  try {
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!targetUser) return { error: 'User record not found.' };
+
+    if (targetUser.id === session.id) {
+      return { error: 'You cannot suspend your own administrative account.' };
+    }
+
+    if (targetUser.role === 'OWNER') {
+      return { error: 'Security restriction: The OWNER account cannot be suspended.' };
+    }
+
+    const nextState = !targetUser.isActive;
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: nextState },
+    });
+
+    // Asynchronously update Supabase in background
+    syncUserSuspensionToSupabase(targetUser.email, nextState).catch(() => {});
+
+    revalidatePath('/admin/customers');
+    revalidatePath('/account');
+
+    return {
+      success: true,
+      isActive: nextState,
+      message: `User account ${targetUser.email} is now ${nextState ? 'ACTIVE' : 'SUSPENDED'}.`,
+    };
+  } catch (err: any) {
+    console.error('Toggle suspension error:', err);
+    return { error: err.message || 'Failed to update user suspension status.' };
+  }
+}
+
+export async function updateUserRoleAction(userId: string, newRole: string) {
+  const session = await getAdminSession();
+  if (!session) return { error: 'Unauthorized. Admin session required.' };
+
+  if (!['OWNER', 'ADMIN'].includes(session.role)) {
+    return { error: 'Access denied: Only Admins or Owners can modify user roles.' };
+  }
+
+  const validRoles = ['CUSTOMER', 'SUPPORT', 'ADMIN'];
+  if (!validRoles.includes(newRole)) {
+    return { error: `Invalid role specified: ${newRole}` };
+  }
+
+  try {
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!targetUser) return { error: 'User record not found.' };
+
+    if (targetUser.role === 'OWNER') {
+      return { error: 'The OWNER role cannot be modified.' };
+    }
+
+    if (targetUser.id === session.id) {
+      return { error: 'You cannot change your own role.' };
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { role: newRole },
+    });
+
+    revalidatePath('/admin/customers');
+    return {
+      success: true,
+      role: updated.role,
+      message: `User role updated to ${newRole}.`,
+    };
+  } catch (err: any) {
+    console.error('Update user role error:', err);
+    return { error: err.message || 'Failed to update user role.' };
+  }
+}
+
 

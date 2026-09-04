@@ -2,11 +2,25 @@ import React from 'react';
 import prisma from '@/lib/prisma';
 import CustomerCRMClient from '@/components/admin/CustomerCRMClient';
 import { Users } from 'lucide-react';
+import { getAdminSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCustomersPage() {
-  const [orders, subscribers] = await Promise.all([
+  const [session, users, orders, subscribers] = await Promise.all([
+    getAdminSession(),
+    prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        orders: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            items: true,
+            payments: true,
+          },
+        },
+      },
+    }),
     prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
@@ -71,20 +85,26 @@ export default async function AdminCustomersPage() {
           <div className="flex items-center gap-2">
             <span className="text-xs font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
-              Customer Relationship & Audience
+              User Control & CRM Suite
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
-            Customer Directory & CRM
+            Users, Customers & Audience
           </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Supervise all registered user activities, order histories, license delivery records, and toggle account access/suspension.
+          </p>
         </div>
       </div>
 
       <CustomerCRMClient
+        currentAdminId={session?.id}
+        initialUsers={users}
         customers={customersList}
         initialSubscribers={subscribers}
       />
     </div>
   );
 }
+
 

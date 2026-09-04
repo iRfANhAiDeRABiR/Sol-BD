@@ -74,7 +74,7 @@ export default function AdminSidebar({
       badge: null,
     },
     {
-      label: 'Customer CRM',
+      label: 'Users & Customers',
       href: '/admin/customers',
       icon: Users,
       exact: false,

@@ -44,6 +44,9 @@ export async function registerCustomerAction(data: {
 
     let user;
     if (existing) {
+      if (existing.isActive === false) {
+        return { error: 'This account has been suspended by an administrator. Please contact customer support.' };
+      }
       if (existing.password) {
         return { error: 'An account with this email already exists. Please log in.' };
       }
@@ -137,6 +140,12 @@ export async function loginCustomerAction(data: {
     const isValid = verifyPassword(password, user.password);
     if (!isValid) {
       return { error: 'Invalid email/phone or password. Please check your credentials.' };
+    }
+
+    if (user.isActive === false) {
+      return {
+        error: 'Your account has been suspended by an administrator. Please contact customer support.',
+      };
     }
 
     // Auto-link any past guest orders matching user email

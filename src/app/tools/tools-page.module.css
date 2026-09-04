@@ -555,7 +555,7 @@
 
 /* Resources Section - Enhanced */
 .resources {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
   padding-top: 56px;
   position: relative;
   z-index: 1;
@@ -576,15 +576,22 @@
   flex-direction: column;
   gap: 12px;
   padding: 28px;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-card, #ffffff);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
   border-radius: 20px;
   text-decoration: none;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+
+:global(.dark) .resourceCard,
+:global([data-theme="dark"]) .resourceCard {
+  background: rgba(15, 23, 42, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
 .resourceCard::before {
@@ -603,9 +610,16 @@
 }
 
 .resourceCard:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-card-hover, rgba(255, 255, 255, 0.95));
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.12);
+}
+
+:global(.dark) .resourceCard:hover,
+:global([data-theme="dark"]) .resourceCard:hover {
+  background: rgba(24, 34, 58, 0.9);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  border-color: rgba(139, 92, 246, 0.3);
 }
 
 .resourceCard:hover::before {
@@ -625,15 +639,25 @@
 }
 
 .resourceCard strong {
-  color: var(--text-primary);
+  color: var(--text-primary, #0f172a);
   font-size: 1.15rem;
   font-weight: 700;
 }
 
+:global(.dark) .resourceCard strong,
+:global([data-theme="dark"]) .resourceCard strong {
+  color: #f8fafc;
+}
+
 .resourceCard span {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #475569);
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+:global(.dark) .resourceCard span,
+:global([data-theme="dark"]) .resourceCard span {
+  color: #94a3b8;
 }
 
 /* Responsive Adjustments */

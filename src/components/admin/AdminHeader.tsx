@@ -10,8 +10,10 @@ import {
   Bell,
   Menu,
   Sparkles,
+  LogOut,
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
+import { logoutAdminAction } from '@/app/admin/actions';
 
 interface AdminHeaderProps {
   adminName?: string;
@@ -81,6 +83,23 @@ export default function AdminHeader({ adminName, pendingReviewsCount = 0 }: Admi
 
         {/* Modern Day/Night Switch */}
         <ThemeToggle />
+
+        {/* Quick Sign Out */}
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await logoutAdminAction();
+            } catch {
+              window.location.href = '/admin/login';
+            }
+          }}
+          title="Sign Out of Admin"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200/60 dark:border-rose-900/30 transition-all active:scale-95"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Sign Out</span>
+        </button>
       </div>
     </header>
   );

@@ -18,19 +18,6 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     const sessionCookie = cookieStore.get(ADMIN_COOKIE_NAME);
 
     if (!sessionCookie?.value) {
-      // In development, if no cookie exists, default to the seeded owner for frictionless testing
-      const owner = await prisma.user.findFirst({
-        where: { role: 'OWNER' },
-        select: { id: true, email: true, name: true, role: true },
-      });
-      if (owner) {
-        return {
-          id: owner.id,
-          email: owner.email,
-          name: owner.name || 'Owner',
-          role: owner.role as AdminRole,
-        };
-      }
       return null;
     }
 
@@ -58,6 +45,13 @@ export async function setAdminSession(session: AdminSession): Promise<void> {
 export async function clearAdminSession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_COOKIE_NAME);
+  cookieStore.set(ADMIN_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
 }
 
 export function hasPermission(userRole: AdminRole, requiredRole: AdminRole): boolean {

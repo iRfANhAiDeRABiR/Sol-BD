@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -34,6 +34,16 @@ export default function AdminSidebar({
   pendingPaymentsCount = 0,
 }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logoutAdminAction();
+    } catch {
+      window.location.href = '/admin/login';
+    }
+  };
 
   const navItems = [
     {
@@ -184,15 +194,15 @@ export default function AdminSidebar({
           <StatusBadge status={adminRole || 'OWNER'} size="sm" showDot={false} />
         </div>
 
-        <form action={logoutAdminAction}>
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors disabled:opacity-50"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>{loggingOut ? 'Signing Out...' : 'Sign Out'}</span>
+        </button>
       </div>
     </aside>
   );

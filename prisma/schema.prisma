@@ -179,3 +179,13 @@ model Subscriber {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 }
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  status    String   @default("UNREAD") // "UNREAD" | "READ" | "ARCHIVED"
+  createdAt DateTime @default(now())
+}

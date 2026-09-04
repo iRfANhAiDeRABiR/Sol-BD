@@ -7,6 +7,8 @@ import ProductGrid from '@/components/home/ProductGrid';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import FAQSection from '@/components/home/FAQSection';
+import ContactSection from '@/components/home/ContactSection';
+import NewsletterSection from '@/components/home/NewsletterSection';
 import { ProductType, CategoryType } from '@/lib/types';
 
 export const revalidate = 0; // Fresh dynamic data on every request
@@ -50,6 +52,8 @@ export default async function HomePage() {
       <WhyChooseUs />
       <TestimonialsSection />
       <FAQSection />
+      <ContactSection />
+      <NewsletterSection />
     </div>
   );
 }

@@ -15,9 +15,17 @@ import {
   Package,
   Filter,
   ArrowUpDown,
+  Check,
+  X,
+  Globe,
 } from 'lucide-react';
-import { formatPrice, formatImageUrl } from '@/lib/utils';
-import { deleteProductAction, uploadLicenseKeys, updateProductSortOrderAction } from '@/app/admin/actions';
+import { formatPrice, formatImageUrl, sanitizeProductSlug } from '@/lib/utils';
+import {
+  deleteProductAction,
+  uploadLicenseKeys,
+  updateProductSortOrderAction,
+  updateProductSlugAction,
+} from '@/app/admin/actions';
 import ProductImportExport from './ProductImportExport';
 import { toast } from 'sonner';
 
@@ -61,6 +69,10 @@ export default function ProductsListClient({
   const [rawKeysInput, setRawKeysInput] = useState('');
   const [importingKeys, setImportingKeys] = useState(false);
 
+  const [editingSlugId, setEditingSlugId] = useState<string | null>(null);
+  const [tempSlugValue, setTempSlugValue] = useState<string>('');
+  const [savingSlugId, setSavingSlugId] = useState<string | null>(null);
+
   const handleUpdateSortOrder = async (productId: string, newOrder: number) => {
     setUpdatingOrderId(productId);
     try {
@@ -77,6 +89,29 @@ export default function ProductsListClient({
     }
   };
 
+  const handleSaveSlug = async (productId: string, newSlug: string) => {
+    setSavingSlugId(productId);
+    try {
+      const res = await updateProductSlugAction(productId, newSlug);
+      if (res?.error) throw new Error(res.error);
+      const savedSlug = res.product?.slug || newSlug;
+      toast.success(`URL Slug updated to /product/${savedSlug}`);
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, slug: savedSlug } : p))
+      );
+      setEditingSlugId(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update slug.');
+    } finally {
+      setSavingSlugId(null);
+    }
+  };
+
+  const handleAutoFixSlug = async (productId: string, currentTitle: string) => {
+    const clean = sanitizeProductSlug(currentTitle);
+    await handleSaveSlug(productId, clean);
+  };
+
   const distinctCategories = Array.from(
     new Set(products.map((p) => p.category?.name).filter(Boolean))
   ).sort();
@@ -86,6 +121,7 @@ export default function ProductsListClient({
     const matchesSearch =
       !term ||
       p.title.toLowerCase().includes(term) ||
+      p.slug.toLowerCase().includes(term) ||
       p.brand.toLowerCase().includes(term) ||
       p.category?.name?.toLowerCase().includes(term);
 
@@ -346,6 +382,113 @@ export default function ProductsListClient({
                       )}
                     </div>
                   </div>
+                </div>
+
+                {/* Product URL Slug / Permalink Editor */}
+                <div className="rounded-xl bg-violet-50/70 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/40 p-2.5 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-violet-700 dark:text-violet-300 flex items-center gap-1 uppercase tracking-wider">
+                      <Globe className="w-3 h-3 text-violet-500" />
+                      <span>URL Permalink</span>
+                    </span>
+
+                    {editingSlugId !== p.id && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingSlugId(p.id);
+                          setTempSlugValue(p.slug);
+                        }}
+                        className="text-[10px] font-bold text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-200 hover:underline flex items-center gap-1"
+                        title="Edit URL slug"
+                      >
+                        <Edit className="w-2.5 h-2.5" />
+                        <span>Edit Slug</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {editingSlugId === p.id ? (
+                    <div className="space-y-1.5 pt-0.5">
+                      <div className="flex items-center rounded-lg bg-white dark:bg-slate-900 border border-violet-300 dark:border-violet-700 overflow-hidden shadow-xs">
+                        <span className="px-2 text-[10px] font-mono text-slate-400 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-white/[0.08] select-none py-1">
+                          /product/
+                        </span>
+                        <input
+                          type="text"
+                          value={tempSlugValue}
+                          onChange={(e) => setTempSlugValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSaveSlug(p.id, tempSlugValue);
+                            } else if (e.key === 'Escape') {
+                              setEditingSlugId(null);
+                            }
+                          }}
+                          placeholder="e.g. microsoft-project-2024"
+                          className="flex-1 px-2 py-1 bg-transparent text-[11px] font-mono font-bold text-slate-800 dark:text-white outline-none"
+                          autoFocus
+                          disabled={savingSlugId === p.id}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveSlug(p.id, tempSlugValue)}
+                          disabled={savingSlugId === p.id}
+                          className="px-2 py-1 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-bold transition-colors disabled:opacity-50 flex items-center gap-0.5"
+                          title="Save Slug"
+                        >
+                          <Check className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingSlugId(null)}
+                          disabled={savingSlugId === p.id}
+                          className="px-2 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold transition-colors"
+                          title="Cancel"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => setTempSlugValue(sanitizeProductSlug(p.title))}
+                          className="text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>Suggest from title</span>
+                        </button>
+                        <span className="text-slate-400 font-mono text-[9px]">Enter to save • Esc to cancel</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                      <Link
+                        href={`/product/${p.slug}`}
+                        target="_blank"
+                        className="font-mono text-[11px] font-bold text-violet-700 dark:text-violet-300 hover:underline truncate max-w-[210px] inline-flex items-center gap-1"
+                        title={`Live URL: /product/${p.slug}`}
+                      >
+                        <span>/product/{p.slug}</span>
+                        <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                      </Link>
+
+                      {(p.slug.includes(' ') || p.slug.includes('%20') || /[A-Z]/.test(p.slug)) && (
+                        <button
+                          type="button"
+                          onClick={() => handleAutoFixSlug(p.id, p.title)}
+                          disabled={savingSlugId === p.id}
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-colors inline-flex items-center gap-1"
+                          title="Slug contains spaces/special characters. Click to convert to clean kebab-case."
+                        >
+                          <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                          <span>Clean Slug</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Variants List & Stock Info */}

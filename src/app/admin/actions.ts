@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { getAdminSession, setAdminSession, clearAdminSession, AdminRole } from '@/lib/admin-auth';
 import { verifyPassword } from '@/lib/customer-auth';
 import { syncUserSuspensionToSupabase } from '@/lib/sync-user-supabase';
+import { sanitizeProductSlug } from '@/lib/utils';
 
 // -------------------------------------------------------------
 // 1. Admin Authentication Server Actions
@@ -302,6 +303,7 @@ export async function verifyPayment(
 // 4. Product Catalog Server Actions
 // -------------------------------------------------------------
 
+
 export async function createProductAction(data: {
   title: string;
   slug: string;
@@ -329,12 +331,24 @@ export async function createProductAction(data: {
     return { error: 'Unauthorized.' };
   }
 
+  const cleanSlug = sanitizeProductSlug(data.slug || data.title);
+  if (!cleanSlug) {
+    return { error: 'Product slug or title is required.' };
+  }
+
   try {
+    const existingSlug = await prisma.product.findFirst({
+      where: { slug: cleanSlug },
+    });
+    if (existingSlug) {
+      return { error: `URL Slug "${cleanSlug}" is already taken by "${existingSlug.title}". Please choose a unique slug.` };
+    }
+
     const product = await prisma.$transaction(async (tx) => {
       const created = await tx.product.create({
         data: {
           title: data.title,
-          slug: data.slug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          slug: cleanSlug,
           brand: data.brand,
           categoryId: data.categoryId,
           summary: data.summary,
@@ -436,6 +450,59 @@ export async function updateProductSortOrderAction(productId: string, sortOrder:
   }
 }
 
+export async function updateProductSlugAction(productId: string, newSlug: string) {
+  const session = await getAdminSession();
+  if (!session) {
+    return { error: 'Unauthorized.' };
+  }
+
+  const cleanSlug = sanitizeProductSlug(newSlug);
+  if (!cleanSlug) {
+    return { error: 'Slug cannot be empty and must contain alphanumeric characters.' };
+  }
+
+  try {
+    const existing = await prisma.product.findFirst({
+      where: {
+        slug: cleanSlug,
+        id: { not: productId },
+      },
+    });
+
+    if (existing) {
+      return { error: `URL Slug "${cleanSlug}" is already taken by "${existing.title}".` };
+    }
+
+    const currentProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { slug: true },
+    });
+
+    const updated = await prisma.product.update({
+      where: { id: productId },
+      data: { slug: cleanSlug },
+      select: { id: true, title: true, slug: true },
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/products');
+    revalidatePath(`/admin/products/${productId}`);
+    revalidatePath('/shop');
+    revalidatePath('/');
+    if (currentProduct?.slug) {
+      revalidatePath(`/product/${currentProduct.slug}`);
+      revalidatePath(`/products/${currentProduct.slug}`);
+    }
+    revalidatePath(`/product/${cleanSlug}`);
+    revalidatePath(`/products/${cleanSlug}`);
+
+    return { success: true, product: updated };
+  } catch (err: any) {
+    console.error('Update product slug error:', err);
+    return { error: err.message || 'Failed to update product slug.' };
+  }
+}
+
 export async function updateProductAction(data: {
   id: string;
   title: string;
@@ -467,6 +534,11 @@ export async function updateProductAction(data: {
     return { error: 'Unauthorized.' };
   }
 
+  const cleanSlug = sanitizeProductSlug(data.slug || data.title);
+  if (!cleanSlug) {
+    return { error: 'Product slug or title is required.' };
+  }
+
   try {
     const existing = await prisma.product.findUnique({
       where: { id: data.id },
@@ -480,12 +552,12 @@ export async function updateProductAction(data: {
     // Slug conflict check (ensure slug is not taken by another product)
     const slugCheck = await prisma.product.findFirst({
       where: {
-        slug: data.slug,
+        slug: cleanSlug,
         id: { not: data.id },
       },
     });
     if (slugCheck) {
-      return { error: `Slug "${data.slug}" is already in use by another product.` };
+      return { error: `URL Slug "${cleanSlug}" is already taken by "${slugCheck.title}". Please choose a unique slug.` };
     }
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -510,7 +582,7 @@ export async function updateProductAction(data: {
         where: { id: data.id },
         data: {
           title: data.title,
-          slug: data.slug || data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          slug: cleanSlug,
           brand: data.brand,
           categoryId: data.categoryId,
           summary: data.summary,

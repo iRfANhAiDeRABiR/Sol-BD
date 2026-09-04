@@ -37,3 +37,12 @@ export function formatImageUrl(src?: string | null): string {
   }
   return s;
 }
+
+export function sanitizeProductSlug(input: string): string {
+  return (input || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

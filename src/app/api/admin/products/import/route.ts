@@ -182,9 +182,12 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const slug =
-          item.slug ||
-          title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const slug = (item.slug || title)
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '');
 
         const category = await resolveCategory(
           item.category_slug || item.category_name || item.category?.name || item.category?.slug || ''
@@ -340,7 +343,12 @@ export async function POST(request: Request) {
         }
 
         const customSlug = getCol(row, ['slug', 'url_slug']);
-        const slug = customSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const slug = (customSlug || title)
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '');
         const brand = getCol(row, ['brand', 'developer', 'vendor']) || 'Microsoft';
         const categoryName = getCol(row, ['category_name', 'category', 'category_slug']);
         const price = Number(getCol(row, ['price', 'selling_price']) || 999);

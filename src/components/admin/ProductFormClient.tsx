@@ -96,6 +96,7 @@ export default function ProductFormClient({
   const isEditing = Boolean(initialProduct?.id);
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(Boolean(initialProduct?.slug));
 
   const [form, setForm] = useState<FormState>({
     title: initialProduct?.title || '',
@@ -438,16 +439,86 @@ export default function ProductFormClient({
                   type="text"
                   required
                   value={form.title}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      title: e.target.value,
-                      slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                    })
-                  }
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+                    setForm((prev) => ({
+                      ...prev,
+                      title: newTitle,
+                      slug: isSlugManuallyEdited
+                        ? prev.slug
+                        : newTitle
+                            .toLowerCase()
+                            .trim()
+                            .replace(/[^\w\s-]/g, '')
+                            .replace(/[\s_-]+/g, '-')
+                            .replace(/^-+|-+$/g, ''),
+                    }));
+                  }}
                   placeholder="e.g. Windows 11 Pro Retail License Key"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
+              </div>
+
+              {/* Product URL Slug Field */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <span>Product URL Slug (Permalink) *</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const generated = form.title
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/[\s_-]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                      setIsSlugManuallyEdited(true);
+                      setForm((prev) => ({ ...prev, slug: generated }));
+                      toast.success(`Slug auto-generated: ${generated}`);
+                    }}
+                    className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Auto-generate from Title</span>
+                  </button>
+                </div>
+                <div className="flex items-center rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] focus-within:ring-2 focus-within:ring-violet-500/50 overflow-hidden">
+                  <span className="px-3 text-xs font-mono font-bold text-slate-400 border-r border-slate-200 dark:border-white/[0.08] bg-slate-100/70 dark:bg-slate-800/80 select-none py-2.5">
+                    /product/
+                  </span>
+                  <input
+                    type="text"
+                    required
+                    value={form.slug}
+                    onChange={(e) => {
+                      setIsSlugManuallyEdited(true);
+                      setForm({
+                        ...form,
+                        slug: e.target.value
+                          .toLowerCase()
+                          .replace(/[^\w\s-]/g, '')
+                          .replace(/\s+/g, '-'),
+                      });
+                    }}
+                    placeholder="e.g. microsoft-project-2024"
+                    className="flex-1 px-3 py-2.5 bg-transparent text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-none"
+                  />
+                  {form.slug && (
+                    <Link
+                      href={`/product/${form.slug}`}
+                      target="_blank"
+                      className="px-3 py-2.5 text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 flex items-center gap-1 border-l border-slate-200 dark:border-white/[0.08]"
+                      title="Preview this product URL"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Controls the live storefront URL: <code className="text-violet-600 dark:text-violet-400 font-mono font-bold">/product/{form.slug || '[slug]'}</code>
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

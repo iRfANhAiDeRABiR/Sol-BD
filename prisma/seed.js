@@ -426,16 +426,34 @@ Browse privately, bypass geo-restrictions, and secure public Wi-Fi on up to 6 de
 
   // 4. Create Owner / Admin User
   const owner = await prisma.user.upsert({
-    where: { email: 'admin@solutionsbd.com' },
+    where: { email: 'solutionsbd247@gmail.com' },
     update: {
       role: 'OWNER',
-      name: 'Irfan (SolutionsBD Owner)',
+      name: 'SolutionsBD Owner',
+      password: 't18gzykHw9YyWzh9',
+      isActive: true,
+    },
+    create: {
+      email: 'solutionsbd247@gmail.com',
+      name: 'SolutionsBD Owner',
+      phone: '+8801410699879',
+      role: 'OWNER',
+      password: 't18gzykHw9YyWzh9',
+      isActive: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'admin@solutionsbd.com' },
+    update: {
+      role: 'ADMIN',
+      name: 'Irfan (SolutionsBD Staff)',
     },
     create: {
       email: 'admin@solutionsbd.com',
-      name: 'Irfan (SolutionsBD Owner)',
+      name: 'Irfan (SolutionsBD Staff)',
       phone: '+8801410699879',
-      role: 'OWNER',
+      role: 'ADMIN',
       password: 'admin123',
     },
   });

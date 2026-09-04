@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getAdminSession, setAdminSession, clearAdminSession, AdminRole } from '@/lib/admin-auth';
+import { verifyPassword } from '@/lib/customer-auth';
 import { syncUserSuspensionToSupabase } from '@/lib/sync-user-supabase';
 
 // -------------------------------------------------------------
@@ -23,8 +24,19 @@ export async function loginAdminAction(formData: FormData) {
       where: { email: email.trim().toLowerCase() },
     });
 
-    if (!user || user.password !== password) {
+    if (!user || !user.password) {
       return { error: 'Invalid admin credentials. Please check and retry.' };
+    }
+
+    const isDirectMatch = user.password === password;
+    const isHashMatch = user.password.includes(':') ? verifyPassword(password, user.password) : false;
+
+    if (!isDirectMatch && !isHashMatch) {
+      return { error: 'Invalid admin credentials. Please check and retry.' };
+    }
+
+    if ((user as any).isActive === false) {
+      return { error: 'Access denied: This administrative account has been suspended.' };
     }
 
     if (!['OWNER', 'ADMIN', 'SUPPORT'].includes(user.role)) {

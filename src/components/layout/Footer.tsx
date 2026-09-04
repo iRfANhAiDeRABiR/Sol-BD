@@ -210,6 +210,10 @@ export default function Footer() {
             <Link href="/policies/delivery-info" className="hover:text-slate-300 transition-colors">
               ডেলিভারি তথ্য
             </Link>
+            <span>•</span>
+            <Link href="/admin/login" className="hover:text-slate-300 transition-colors text-violet-400/80 hover:text-violet-300">
+              অ্যাডমিন পোর্টাল
+            </Link>
           </div>
 
           <div className="text-center sm:text-right">

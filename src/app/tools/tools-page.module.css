@@ -1,0 +1,686 @@
+/* Tools Page Styles - Enhanced Modern Design */
+
+.page {
+  min-height: 100vh;
+  padding: clamp(32px, 4vw, 48px) 0 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+}
+
+/* Decorative background accent */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(108, 99, 255, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Section Layout */
+.toolsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.sectionHeader {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.sectionEyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionEyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 1px;
+}
+
+.sectionHeader h2 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  line-height: 1.15;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sectionHeader p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 600px;
+}
+
+/* Tools Grid - Uniform Modern Layout */
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+/* Tool Card - Glassmorphism Enhanced */
+.toolCard {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 0.3s ease, 
+              border-color 0.3s ease,
+              background 0.3s ease;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient border effect on hover */
+.toolCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0), rgba(108, 99, 255, 0));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+
+.toolCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -12px rgba(108, 99, 255, 0.15),
+              0 8px 16px -8px rgba(0, 0, 0, 0.3);
+  border-color: rgba(108, 99, 255, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toolCard:hover::before {
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.5), rgba(168, 85, 247, 0.3));
+}
+
+/* Icon Container - Modern Badge Style */
+.toolIconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.15), rgba(168, 85, 247, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.toolIconWrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.1));
+  pointer-events: none;
+}
+
+.toolIcon {
+  font-size: 1.75rem;
+  line-height: 1;
+  display: inline-block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.toolCard h3 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.toolCard p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Form Elements within Cards - Enhanced */
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldLabel input[type="number"],
+.fieldLabel select {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  width: 100%;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.fieldLabel input[type="number"]:hover,
+.fieldLabel select:hover {
+  border-color: rgba(108, 99, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fieldLabel input[type="number"]:focus,
+.fieldLabel select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(108, 99, 255, 0.08);
+  box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.1),
+              inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Range Slider - Modern Design */
+.rangeInput {
+  width: 100%;
+  cursor: pointer;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--accent-primary) 0%, var(--accent-primary) var(--range-progress, 50%), rgba(255, 255, 255, 0.1) var(--range-progress, 50%), rgba(255, 255, 255, 0.1) 100%);
+  appearance: none;
+  margin: 8px 0;
+  transition: background 0.15s ease;
+}
+
+.rangeInput::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c63ff, #a855f7);
+  cursor: pointer;
+  border: 3px solid var(--bg-card, #1a1a2e);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4),
+              0 0 0 2px rgba(108, 99, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rangeInput::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(108, 99, 255, 0.5),
+              0 0 0 4px rgba(108, 99, 255, 0.15);
+}
+
+.rangeInput::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c63ff, #a855f7);
+  cursor: pointer;
+  border: 3px solid var(--bg-card, #1a1a2e);
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4);
+}
+
+.twoColumnFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Outputs & Results - Enhanced */
+.passwordOutput {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', monospace);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+  padding: 18px 20px;
+  border-radius: 14px;
+  word-break: break-all;
+  font-size: 1.15rem;
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  text-align: center;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
+}
+
+.passwordOutput::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+.resultBox {
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(168, 85, 247, 0.08));
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.resultBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), #a855f7);
+}
+
+.resultBox strong {
+  font-size: 1.6rem;
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.resultBox span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.metricGrid span {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  padding: 14px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.metricGrid span:hover {
+  border-color: rgba(108, 99, 255, 0.2);
+  background: rgba(108, 99, 255, 0.05);
+}
+
+.metricGrid strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.guideBox {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border-radius: 16px;
+  padding: 20px;
+  border-left: 4px solid var(--accent-primary);
+  position: relative;
+}
+
+.guideBox::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--accent-primary), #a855f7);
+  border-radius: 2px 0 0 2px;
+}
+
+.guideBox strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.guideBox ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guideBox li {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding-left: 20px;
+  position: relative;
+}
+
+.guideBox li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+}
+
+/* Button - Enhanced Gradient */
+.toolButton {
+  margin-top: auto;
+  background: linear-gradient(135deg, #6c63ff 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+}
+
+.toolButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.toolButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.4);
+}
+
+.toolButton:hover::before {
+  opacity: 1;
+}
+
+.toolButton:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3);
+}
+
+/* Checklist Specifics - Enhanced */
+.progressTrack {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), #a855f7);
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 4px;
+  position: relative;
+}
+
+.progressTrack span::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+  border-radius: 0 4px 4px 0;
+}
+
+.progressText {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.checklist label:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.checklist input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--accent-primary);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.checklist input[type="checkbox"]:checked + span {
+  color: var(--text-primary);
+  text-decoration: line-through;
+  text-decoration-color: rgba(108, 99, 255, 0.4);
+}
+
+/* Resources Section - Enhanced */
+.resources {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.resources .sectionHeader h2 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.resourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.resourceCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0), rgba(108, 99, 255, 0));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+
+.resourceCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
+}
+
+.resourceCard:hover::before {
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.4), rgba(168, 85, 247, 0.2));
+}
+
+.resourceIcon {
+  font-size: 1.75rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(168, 85, 247, 0.08));
+  border-radius: 14px;
+  margin-bottom: 4px;
+}
+
+.resourceCard strong {
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.resourceCard span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .page {
+    padding: 32px 0 72px;
+    gap: 56px;
+  }
+
+  .page::before {
+    width: 100%;
+    height: 300px;
+  }
+
+  .toolsGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .toolCard {
+    padding: 24px;
+  }
+
+  .twoColumnFields {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader h2 {
+    font-size: 1.75rem;
+  }
+
+  .resourceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .toolIconWrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .toolIcon {
+    font-size: 1.5rem;
+  }
+}

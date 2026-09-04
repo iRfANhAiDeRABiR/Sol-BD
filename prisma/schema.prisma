@@ -1,0 +1,180 @@
+// Prisma Schema for SolutionsBD (Digital E-Commerce Engine)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Easily switchable to "postgresql" for Supabase
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  phone         String?
+  password      String?  // Hashed password for admin auth
+  role          String   @default("CUSTOMER") // "OWNER" | "ADMIN" | "SUPPORT" | "CUSTOMER"
+  walletBalance Float    @default(0.0)
+  loyaltyPoints Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders        Order[]
+  paymentsVerified Payment[] @relation("VerifiedByAdmin")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  icon        String    @default("Monitor") // Lucide icon name or emoji
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+
+  products    Product[]
+}
+
+model Product {
+  id             String           @id @default(uuid())
+  title          String
+  slug           String           @unique
+  sku            String?          @unique
+  summary        String?
+  description    String           // Rich description and activation instructions
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  brand          String           // "Microsoft", "Adobe", "IDM", "NordVPN", etc.
+  image          String           // Image URL or placeholder
+  status         String           @default("ACTIVE") // "ACTIVE" | "DRAFT" | "ARCHIVED"
+  sortOrder      Int              @default(0)
+  isFeatured     Boolean          @default(false)
+  isFlashSale    Boolean          @default(false)
+  rating         Float            @default(4.9)
+  reviewCount    Int              @default(25)
+  deliveryType   String           @default("INSTANT_AUTO") // "INSTANT_AUTO" | "ACCOUNT_INVITE" | "MANUAL_DELIVERY"
+  tags           String           @default("[]") // JSON string of tags
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  variants       ProductVariant[]
+  reviews        Review[]
+}
+
+model ProductVariant {
+  id             String       @id @default(uuid())
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name           String       // e.g. "1 PC - Lifetime", "Family 6 Users - 1 Year"
+  sku            String?      @unique
+  price          Float        // Current selling price in BDT
+  originalPrice  Float?       // Strikethrough price in BDT
+  licenseType    String       @default("LICENSE_KEY") // "LICENSE_KEY" | "ACCOUNT_INVITE" | "SHARED_ACCOUNT"
+  validity       String       @default("Lifetime") // "Lifetime", "1 Year", "1 Month"
+  isDefault      Boolean      @default(false)
+  stock          Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+
+  licenseKeys    LicenseKey[]
+  orderItems     OrderItem[]
+}
+
+model LicenseKey {
+  id          String          @id @default(uuid())
+  variantId   String
+  variant     ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  keyCode     String          // The actual digital serial key or login payload
+  status      String          @default("AVAILABLE") // "AVAILABLE" | "RESERVED" | "SOLD" | "REVOKED"
+  orderId     String?
+  soldAt      DateTime?
+  createdAt   DateTime        @default(now())
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique // e.g. "SBD-2026-9041"
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  totalAmount    Float
+  discountAmount Float       @default(0.0)
+  couponCode     String?
+  paymentStatus  String      @default("PENDING") // "PENDING" | "SUBMITTED" | "PAID" | "FAILED" | "REFUNDED"
+  paymentMethod  String      // "BKASH_ONLINE" | "BKASH_MANUAL" | "NAGAD_MANUAL" | "ROCKET_MANUAL" | "WALLET"
+  paymentTrxId   String?     // Transaction ID from bKash/Nagad
+  senderPhone    String?     // Sender's phone number for manual MFS verification
+  orderStatus    String      @default("PENDING_PAYMENT") // "PENDING_PAYMENT" | "PAYMENT_SUBMITTED" | "PAID" | "PROCESSING" | "COMPLETED" | "CANCELLED" | "REFUNDED"
+  deliveredKeys  String      @default("[]") // JSON array of delivered key details
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  items          OrderItem[]
+  payments       Payment[]
+}
+
+model OrderItem {
+  id          String          @id @default(uuid())
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId   String?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productName String?         // Immutable snapshot
+  variantName String?         // Immutable snapshot
+  quantity    Int
+  unitPrice   Float
+}
+
+model Payment {
+  id              String    @id @default(uuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentMethod   String    // "BKASH_ONLINE", "BKASH_MANUAL", "NAGAD_MANUAL", "ROCKET_MANUAL", "BANK_TRANSFER"
+  paymentStatus   String    @default("PENDING") // "PENDING", "SUBMITTED", "VERIFIED", "REJECTED", "REFUNDED"
+  amount          Float
+  transactionId   String?
+  senderPhone     String?
+  paymentProofUrl String?
+  verifiedById    String?
+  verifiedBy      User?     @relation("VerifiedByAdmin", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Coupon {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  discountPercent Float?    // e.g. 10 for 10%
+  discountAmount  Float?    // e.g. 100 for 100 BDT
+  minSpend        Float     @default(0.0)
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+}
+
+model Review {
+  id                String   @id @default(uuid())
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerName      String
+  rating            Int      @default(5)
+  comment           String
+  isVerifiedPurchase Boolean @default(true)
+  createdAt         DateTime @default(now())
+}
+
+model Subscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  source    String   @default("footer")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

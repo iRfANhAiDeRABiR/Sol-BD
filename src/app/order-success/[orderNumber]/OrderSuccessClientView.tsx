@@ -210,6 +210,33 @@ export default function OrderSuccessClientView({
           </div>
         </div>
 
+        {/* Purchased Items Breakdown */}
+        {order.items && order.items.length > 0 && (
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/[0.08]">
+            <span className="text-slate-400 dark:text-slate-500 block text-[11px] font-bold uppercase tracking-wider">
+              অর্ডারকৃত সফটওয়্যার আইটেম:
+            </span>
+            <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+              {order.items.map((item: any, idx: number) => {
+                const title = item.productName || item.variant?.product?.title || 'Digital License';
+                const variant = item.variantName || item.variant?.name || 'Standard';
+                return (
+                  <div key={idx} className="py-2 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block">{title}</span>
+                      <span className="text-violet-600 dark:text-violet-400 font-semibold text-[11px]">{variant}</span>
+                      <span className="text-slate-400 text-[11px] ml-1.5">({item.quantity} × {formatPrice(item.unitPrice)})</span>
+                    </div>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {formatPrice(item.unitPrice * item.quantity)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Pricing */}
         <div className="pt-4 border-t border-slate-100 dark:border-white/[0.08] flex items-center justify-between text-sm">
           <span className="font-bold text-slate-700 dark:text-slate-300">পরিশোধিত মোট মূল্য:</span>

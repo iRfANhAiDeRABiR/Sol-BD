@@ -170,6 +170,8 @@ export default function CartPageClient() {
         customerPhone: customer.phone,
         items: activeItems.map((item) => ({
           variantId: item.optionId,
+          productName: (item as any).productTitle || item.name,
+          variantName: (item as any).variantName || item.optionName || 'Standard License',
           quantity: item.quantity,
           unitPrice: item.price,
         })),

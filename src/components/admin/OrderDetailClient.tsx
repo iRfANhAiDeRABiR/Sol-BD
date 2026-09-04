@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Printer,
@@ -16,7 +17,7 @@ import {
   ExternalLink,
   Key,
 } from 'lucide-react';
-import { formatPrice, formatDate } from '@/lib/utils';
+import { formatPrice, formatDate, formatImageUrl } from '@/lib/utils';
 import StatusBadge from './StatusBadge';
 import { updateOrderStatus } from '@/app/admin/actions';
 import { toast } from 'sonner';
@@ -112,24 +113,81 @@ export default function OrderDetailClient({ order }: OrderDetailClientProps) {
             </h3>
 
             <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {order.items.map((item: any) => (
-                <div key={item.id} className="py-3 flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-900 dark:text-white block text-sm">
-                      {item.productName || 'Digital License'}
-                    </span>
-                    <span className="text-violet-600 dark:text-violet-400 font-semibold block">
-                      {item.variantName || 'Standard'}
-                    </span>
-                    <span className="text-slate-400 text-[11px]">
-                      Quantity: {item.quantity} × {formatPrice(item.unitPrice)}
-                    </span>
+              {order.items.map((item: any) => {
+                const productTitle =
+                  item.productName ||
+                  item.variant?.product?.title ||
+                  'Digital Software License';
+                const variantName =
+                  item.variantName ||
+                  item.variant?.name ||
+                  'Standard License';
+                const productImage =
+                  item.variant?.product?.image;
+                const productSlug =
+                  item.variant?.product?.slug;
+                const brand =
+                  item.variant?.product?.brand;
+
+                return (
+                  <div key={item.id} className="py-3.5 flex items-center justify-between gap-4 text-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {productImage && (
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 border border-slate-200/60 dark:border-white/[0.06]">
+                          <Image
+                            src={formatImageUrl(productImage)}
+                            alt={productTitle}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="space-y-0.5 min-w-0">
+                        {brand && (
+                          <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 block">
+                            {brand}
+                          </span>
+                        )}
+                        {productSlug ? (
+                          <Link
+                            href={`/product/${productSlug}`}
+                            target="_blank"
+                            className="font-bold text-slate-900 dark:text-white block text-sm hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                          >
+                            {productTitle}
+                          </Link>
+                        ) : (
+                          <span className="font-bold text-slate-900 dark:text-white block text-sm">
+                            {productTitle}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                          <span className="text-violet-600 dark:text-violet-400 font-semibold text-xs">
+                            {variantName}
+                          </span>
+                          {item.variant?.validity && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold">
+                              {item.variant.validity}
+                            </span>
+                          )}
+                          {item.variant?.licenseType && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold">
+                              {item.variant.licenseType}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-slate-400 text-[11px] block mt-0.5">
+                          Quantity: <strong className="text-slate-700 dark:text-slate-200 font-mono">{item.quantity}</strong> × {formatPrice(item.unitPrice)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="font-black text-slate-900 dark:text-white text-sm flex-shrink-0 text-right">
+                      {formatPrice(item.unitPrice * item.quantity)}
+                    </div>
                   </div>
-                  <div className="font-black text-slate-900 dark:text-white text-sm">
-                    {formatPrice(item.unitPrice * item.quantity)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Financial Breakdown Summary */}

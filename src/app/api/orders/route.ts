@@ -72,12 +72,28 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. Create order items
+      // 2. Create order items with explicit product and variant names
       for (const item of items) {
+        let pName = item.productName || null;
+        let vName = item.variantName || null;
+
+        if (item.variantId && (!pName || !vName)) {
+          const varRecord = await tx.productVariant.findUnique({
+            where: { id: item.variantId },
+            include: { product: true },
+          });
+          if (varRecord) {
+            pName = pName || varRecord.product?.title || null;
+            vName = vName || varRecord.name || null;
+          }
+        }
+
         await tx.orderItem.create({
           data: {
             orderId: order.id,
-            variantId: item.variantId,
+            variantId: item.variantId || null,
+            productName: pName || 'Digital Software License',
+            variantName: vName || 'Standard License',
             quantity: item.quantity,
             unitPrice: item.unitPrice,
           },

@@ -38,7 +38,7 @@ export default function ToolsPage() {
     <main className={styles.page}>
       <ToolsClient />
 
-      <section className={`container ${styles.resources}`} aria-labelledby="tool-resources-title">
+      <section className={`w-full max-w-[1440px] mx-auto px-3 sm:px-5 ${styles.resources}`} aria-labelledby="tool-resources-title">
         <div className={styles.sectionHeader}>
           <span className={styles.sectionEyebrow}>Helpful links</span>
           <h2 id="tool-resources-title">Continue with trusted resources</h2>

@@ -198,18 +198,18 @@ export default async function ShopPage(props: ShopPageProps) {
             <form
               action="/shop"
               method="GET"
-              className="flex items-center gap-2 flex-1 sm:w-64 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-1.5 focus-within:border-violet-500 transition-colors"
+              className="flex items-center gap-2.5 flex-1 sm:w-80 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-2.5 focus-within:border-violet-500 transition-colors"
             >
               {sort !== 'newest' && (
                 <input type="hidden" name="sort" value={sort} />
               )}
-              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <Search className="w-4.5 h-4.5 text-slate-400 shrink-0" />
               <input
                 type="text"
                 name="q"
                 defaultValue={query}
                 placeholder="Search products..."
-                className="bg-transparent text-xs w-full outline-none font-medium text-slate-800 dark:text-white placeholder:text-slate-400"
+                className="bg-transparent text-sm w-full outline-none font-medium text-slate-800 dark:text-white placeholder:text-slate-400"
               />
             </form>
 

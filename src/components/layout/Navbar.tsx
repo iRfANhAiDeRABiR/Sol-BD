@@ -137,14 +137,14 @@ export default function Navbar() {
             action="/shop"
             method="GET"
             onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-sm items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 focus-within:border-violet-500/50 focus-within:bg-violet-500/10 transition-all"
+            className="hidden md:flex flex-1 max-w-md lg:max-w-lg xl:max-w-xl items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/5 hover:bg-violet-500/[0.08] px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 focus-within:border-violet-500/60 focus-within:bg-violet-500/10 focus-within:ring-2 focus-within:ring-violet-500/20 transition-all shadow-sm"
           >
-            <Search className="w-4 h-4 text-violet-600 shrink-0" />
+            <Search className="w-5 h-5 text-violet-600 dark:text-violet-400 shrink-0" />
             <input
               type="text"
               name="q"
               placeholder="Search Windows, Office, IDM, Antivirus..."
-              className="bg-transparent text-xs w-full outline-none font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="bg-transparent text-sm w-full outline-none font-medium text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </form>
 
@@ -326,14 +326,14 @@ export default function Navbar() {
                 setMobileMenuOpen(false);
                 handleSearchSubmit(e);
               }}
-              className="mt-2 flex items-center gap-2 bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 p-2.5 rounded-xl border border-violet-500/20"
+              className="mt-2 flex items-center gap-2.5 bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 px-3.5 py-3 rounded-xl border border-violet-500/20"
             >
-              <Search className="w-4 h-4 text-violet-600 shrink-0" />
+              <Search className="w-5 h-5 text-violet-600 shrink-0" />
               <input
                 type="text"
                 name="q"
                 placeholder="Search All Products..."
-                className="bg-transparent text-xs w-full outline-none font-bold text-slate-800 dark:text-white placeholder:text-violet-400/80"
+                className="bg-transparent text-sm w-full outline-none font-bold text-slate-800 dark:text-white placeholder:text-violet-400/80"
               />
             </form>
           </div>

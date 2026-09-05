@@ -134,15 +134,19 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6 space-y-6">
       {/* Header Banner */}
-      <div className="glass-card rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-violet-900 to-indigo-900 text-white shadow-xl relative overflow-hidden">
+      <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-700 dark:from-violet-950 dark:via-indigo-950 dark:to-slate-900 text-white shadow-xl relative overflow-hidden border border-violet-500/20">
+        {/* Ambient subtle glow decoration */}
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-sky-400/15 rounded-full blur-2xl pointer-events-none" />
+
         <div className="relative z-10 space-y-2 max-w-xl">
-          <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full inline-block">
+          <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-black/25 backdrop-blur-sm border border-amber-300/30 px-3 py-1 rounded-full inline-block shadow-sm">
             Official Store
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
             {activeCategory ? activeCategory.name : 'সকল ডিজিটাল সফটওয়্যার ও লাইসেন্স'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-indigo-100 dark:text-slate-300 leading-relaxed font-medium">
             {activeCategory?.description ||
               'জেনুইন উইন্ডোজ, মাইক্রোসফট অফিস, আইডিএম এবং অ্যান্টিভাইরাস লাইসেন্স কি সর্বনিম্ন মূল্যে তাৎক্ষণিক অটোমেটেড ডেলিভারিসহ।'}
           </p>

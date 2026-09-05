@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import prisma from '@/lib/prisma';
+import { getAdminSession } from '@/lib/admin-auth';
+import { getCustomerSession } from '@/lib/customer-auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -13,22 +18,27 @@ export async function POST(request: Request) {
       paymentTrxId,
       senderPhone,
       couponCode,
-      discountAmount = 0,
       userId,
     } = body;
 
-    if (!customerName || !customerEmail || !customerPhone || !items || items.length === 0) {
+    const trimmedName = (customerName || '').trim();
+    const trimmedEmail = (customerEmail || '').trim().toLowerCase();
+    const trimmedPhone = (customerPhone || '').trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedPhone || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Customer name, email, phone, and at least one item are required.' },
         { status: 400 }
       );
     }
 
-    // Resolve userId if not provided by checking if customerEmail belongs to an existing user
-    let effectiveUserId = userId || null;
-    if (!effectiveUserId && customerEmail) {
+    // Resolve userId securely: check authenticated customer session first
+    const customerSession = await getCustomerSession();
+    let effectiveUserId = customerSession ? customerSession.id : (userId || null);
+
+    if (!effectiveUserId && trimmedEmail) {
       const existingUser = await prisma.user.findUnique({
-        where: { email: customerEmail.trim().toLowerCase() },
+        where: { email: trimmedEmail },
         select: { id: true },
       });
       if (existingUser) {
@@ -36,135 +46,150 @@ export async function POST(request: Request) {
       }
     }
 
-    // Generate unique order number (e.g. SBD-2026-7842)
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = `SBD-2026-${randomSuffix}`;
+    // Generate high-entropy unique order number
+    let orderNumber = `SBD-2026-${crypto.randomInt(100000, 999999)}`;
+    let retries = 5;
+    while (retries > 0 && (await prisma.order.findUnique({ where: { orderNumber } }))) {
+      orderNumber = `SBD-2026-${crypto.randomInt(100000, 999999)}`;
+      retries--;
+    }
 
-    // Calculate subtotal
-    const subtotal = items.reduce(
-      (sum: number, i: any) => sum + i.unitPrice * i.quantity,
-      0
-    );
-    const finalAmount = Math.max(0, subtotal - discountAmount);
+    // -------------------------------------------------------------
+    // 1. Server-Side Price & Variant Validation (Zero Client Trust)
+    // -------------------------------------------------------------
+    let calculatedSubtotal = 0;
+    const validatedItems: Array<{
+      variantId: string;
+      productName: string;
+      variantName: string;
+      quantity: number;
+      unitPrice: number;
+    }> = [];
 
-    // Is this an automated instant payment? (bKash online gateway or wallet)
-    const isInstantPayment = paymentMethod === 'BKASH_ONLINE';
+    for (const rawItem of items) {
+      const qty = Math.max(1, Math.min(100, Math.floor(Number(rawItem.quantity) || 1)));
+      if (!rawItem.variantId) {
+        return NextResponse.json({ error: 'Each order item must specify a valid variant.' }, { status: 400 });
+      }
 
-    // Execute atomic transaction: Create Order + OrderItems + Allocate License Keys if paid
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: rawItem.variantId },
+        include: { product: true },
+      });
+
+      if (!variant) {
+        return NextResponse.json({ error: `Product variant not found: ${rawItem.variantId}` }, { status: 400 });
+      }
+
+      const verifiedUnitPrice = variant.price;
+      calculatedSubtotal += verifiedUnitPrice * qty;
+
+      validatedItems.push({
+        variantId: variant.id,
+        productName: variant.product.title,
+        variantName: variant.name,
+        quantity: qty,
+        unitPrice: verifiedUnitPrice,
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 2. Server-Side Coupon & Discount Calculation
+    // -------------------------------------------------------------
+    let verifiedDiscount = 0;
+    if (couponCode && typeof couponCode === 'string') {
+      const cleanCode = couponCode.trim().toUpperCase();
+      const dbCoupon = await prisma.coupon.findUnique({
+        where: { code: cleanCode },
+      });
+
+      if (dbCoupon && dbCoupon.isActive) {
+        const isExpired = dbCoupon.expiresAt && new Date() > dbCoupon.expiresAt;
+        const meetsMinSpend = calculatedSubtotal >= dbCoupon.minSpend;
+
+        if (!isExpired && meetsMinSpend) {
+          if (dbCoupon.discountPercent) {
+            verifiedDiscount = Math.round((calculatedSubtotal * dbCoupon.discountPercent) / 100);
+          } else if (dbCoupon.discountAmount) {
+            verifiedDiscount = Math.min(calculatedSubtotal, dbCoupon.discountAmount);
+          }
+        }
+      } else {
+        // Built-in verified promo codes
+        if (cleanCode === 'WELCOME10') {
+          verifiedDiscount = Math.round(calculatedSubtotal * 0.1);
+        } else if (cleanCode === 'EID50' && calculatedSubtotal >= 500) {
+          verifiedDiscount = 50;
+        }
+      }
+    }
+
+    const finalAmount = Math.max(0, calculatedSubtotal - verifiedDiscount);
+
+    // -------------------------------------------------------------
+    // 3. Payment Status & Order Creation
+    // All manual MFS payments require admin verification. No unverified instant fulfillment.
+    // -------------------------------------------------------------
+    const hasTrxId = Boolean(paymentTrxId && paymentTrxId.trim());
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create order
       const order = await tx.order.create({
         data: {
           orderNumber,
           userId: effectiveUserId,
-          customerName,
-          customerEmail,
-          customerPhone,
+          customerName: trimmedName,
+          customerEmail: trimmedEmail,
+          customerPhone: trimmedPhone,
           totalAmount: finalAmount,
-          discountAmount,
-          couponCode: couponCode || null,
-          paymentStatus: isInstantPayment ? 'PAID' : 'PENDING',
-          paymentMethod,
-          paymentTrxId: paymentTrxId || (isInstantPayment ? `BKASH-TXN-${Date.now()}` : null),
-          senderPhone: senderPhone || null,
-          orderStatus: isInstantPayment ? 'COMPLETED' : 'PROCESSING',
+          discountAmount: verifiedDiscount,
+          couponCode: couponCode ? String(couponCode).trim().toUpperCase() : null,
+          paymentStatus: hasTrxId ? 'SUBMITTED' : 'PENDING',
+          paymentMethod: paymentMethod || 'BKASH_MANUAL',
+          paymentTrxId: paymentTrxId ? paymentTrxId.trim() : null,
+          senderPhone: senderPhone ? senderPhone.trim() : null,
+          orderStatus: hasTrxId ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
           deliveredKeys: '[]',
         },
       });
 
-      // 2. Create order items with explicit product and variant names
-      for (const item of items) {
-        let pName = item.productName || null;
-        let vName = item.variantName || null;
-
-        if (item.variantId && (!pName || !vName)) {
-          const varRecord = await tx.productVariant.findUnique({
-            where: { id: item.variantId },
-            include: { product: true },
-          });
-          if (varRecord) {
-            pName = pName || varRecord.product?.title || null;
-            vName = vName || varRecord.name || null;
-          }
-        }
-
+      // 2. Create order items with verified snapshots
+      for (const item of validatedItems) {
         await tx.orderItem.create({
           data: {
             orderId: order.id,
-            variantId: item.variantId || null,
-            productName: pName || 'Digital Software License',
-            variantName: vName || 'Standard License',
+            variantId: item.variantId,
+            productName: item.productName,
+            variantName: item.variantName,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
           },
         });
       }
 
-      // 3. Allocate digital license keys if instant payment
-      const allocatedKeysList: Array<{ variantName: string; keyCode: string }> = [];
-
-      if (isInstantPayment) {
-        for (const item of items) {
-          // Fetch available keys from pool
-          const availableKeys = await tx.licenseKey.findMany({
-            where: {
-              variantId: item.variantId,
-              status: 'AVAILABLE',
-            },
-            take: item.quantity,
-          });
-
-          // Fetch variant name for nice label
-          const variant = await tx.productVariant.findUnique({
-            where: { id: item.variantId },
-            include: { product: true },
-          });
-
-          for (const k of availableKeys) {
-            await tx.licenseKey.update({
-              where: { id: k.id },
-              data: {
-                status: 'SOLD',
-                orderId: order.id,
-                soldAt: new Date(),
-              },
-            });
-
-            allocatedKeysList.push({
-              variantName: `${variant?.product.title} (${variant?.name})`,
-              keyCode: k.keyCode,
-            });
-          }
-
-          // Decrement stock count
-          if (variant) {
-            await tx.productVariant.update({
-              where: { id: variant.id },
-              data: {
-                stock: Math.max(0, variant.stock - item.quantity),
-              },
-            });
-          }
-        }
-
-        // Update order with allocated keys
-        await tx.order.update({
-          where: { id: order.id },
+      // 3. Create initial payment record if transaction ID provided
+      if (hasTrxId) {
+        await tx.payment.create({
           data: {
-            deliveredKeys: JSON.stringify(allocatedKeysList),
+            orderId: order.id,
+            paymentMethod: paymentMethod || 'BKASH_MANUAL',
+            paymentStatus: 'SUBMITTED',
+            amount: finalAmount,
+            transactionId: paymentTrxId.trim(),
+            senderPhone: senderPhone ? senderPhone.trim() : null,
           },
         });
       }
 
-      return { order, allocatedKeysList };
+      return order;
     });
 
     return NextResponse.json({
       success: true,
-      order: result.order,
-      orderNumber: result.order.orderNumber,
-      paymentStatus: result.order.paymentStatus,
-      deliveredKeys: result.allocatedKeysList,
+      order: result,
+      orderNumber: result.orderNumber,
+      paymentStatus: result.paymentStatus,
+      totalAmount: result.totalAmount,
     });
   } catch (error: any) {
     console.error('Order creation error:', error);
@@ -177,31 +202,92 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const adminSession = await getAdminSession();
+    const customerSession = await getCustomerSession();
+
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-    const orderNumber = searchParams.get('orderNumber');
+    const email = searchParams.get('email')?.trim().toLowerCase();
+    const orderNumber = searchParams.get('orderNumber')?.trim();
+    const phone = searchParams.get('phone')?.trim();
 
-    const where: any = {};
-    if (orderNumber) where.orderNumber = orderNumber;
-    if (email) where.customerEmail = email;
+    // 1. Admin Session: Can view all orders or filtered orders
+    if (adminSession) {
+      const where: any = {};
+      if (orderNumber) where.orderNumber = orderNumber;
+      if (email) where.customerEmail = email;
 
-    const orders = await prisma.order.findMany({
-      where,
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: true,
+      const orders = await prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      });
 
-    return NextResponse.json({ orders });
+      return NextResponse.json({ orders });
+    }
+
+    // 2. Authenticated Customer Session: Strictly limited to customer's own orders
+    if (customerSession) {
+      const where: any = {
+        OR: [
+          { userId: customerSession.id },
+          { customerEmail: customerSession.email.toLowerCase() },
+        ],
+      };
+      if (orderNumber) where.orderNumber = orderNumber;
+
+      const orders = await prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json({ orders });
+    }
+
+    // 3. Guest lookup: MUST provide BOTH valid orderNumber AND matching email or phone
+    if (orderNumber && (email || phone)) {
+      const where: any = { orderNumber };
+      if (email) where.customerEmail = email;
+      if (phone) where.customerPhone = phone;
+
+      const orders = await prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json({ orders });
+    }
+
+    // 4. Reject all unauthenticated anonymous attempts
+    return NextResponse.json(
+      { error: 'Unauthorized. Please sign in or provide valid order credentials.' },
+      { status: 401 }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Failed to fetch orders.' },

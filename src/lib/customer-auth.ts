@@ -13,6 +13,21 @@ export interface CustomerSession {
 }
 
 const CUSTOMER_COOKIE_NAME = 'sbd_customer_session';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'sbd_customer_signing_secret_2026_secure';
+
+function signCustomerData(dataStr: string): string {
+  return crypto.createHmac('sha256', SESSION_SECRET).update(dataStr).digest('hex');
+}
+
+function verifyCustomerSignature(dataStr: string, signature: string): boolean {
+  try {
+    const expected = signCustomerData(dataStr);
+    if (expected.length !== signature.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Hash password using Node.js scrypt with a unique random salt
@@ -39,6 +54,7 @@ export function verifyPassword(password: string, combinedHash?: string | null): 
     if (!salt || !key) return false;
     const keyBuffer = Buffer.from(key, 'hex');
     const derivedKey = crypto.scryptSync(password, salt, 64);
+    if (keyBuffer.length !== derivedKey.length) return false;
     return crypto.timingSafeEqual(keyBuffer, derivedKey);
   } catch {
     return false;
@@ -46,7 +62,7 @@ export function verifyPassword(password: string, combinedHash?: string | null): 
 }
 
 /**
- * Retrieve authenticated customer session from HTTP-only cookie
+ * Retrieve authenticated customer session from HTTP-only cookie with cryptographic signature verification
  */
 export async function getCustomerSession(): Promise<CustomerSession | null> {
   try {
@@ -54,23 +70,72 @@ export async function getCustomerSession(): Promise<CustomerSession | null> {
     const sessionCookie = cookieStore.get(CUSTOMER_COOKIE_NAME);
     if (!sessionCookie?.value) return null;
 
-    const parsed = JSON.parse(Buffer.from(sessionCookie.value, 'base64').toString('utf-8'));
+    const rawVal = sessionCookie.value;
+    const parts = rawVal.split('.');
+    if (parts.length !== 2) {
+      // Reject any unsigned or legacy cookies
+      return null;
+    }
+
+    const [dataB64, signature] = parts;
+    if (!verifyCustomerSignature(dataB64, signature)) {
+      // Signature mismatch - tampering detected
+      return null;
+    }
+
+    const parsed = JSON.parse(Buffer.from(dataB64, 'base64').toString('utf-8'));
     if (!parsed?.id || !parsed?.email) return null;
 
-    return parsed as CustomerSession;
+    // Verify user exists and is active in database, pulling fresh state
+    const dbUser = await prisma.user.findUnique({
+      where: { id: parsed.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        walletBalance: true,
+        loyaltyPoints: true,
+      },
+    });
+
+    if (!dbUser || (dbUser as any).isActive === false) {
+      return null;
+    }
+
+    return {
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name || 'Customer',
+      phone: dbUser.phone,
+      role: dbUser.role,
+      walletBalance: dbUser.walletBalance || 0,
+      loyaltyPoints: dbUser.loyaltyPoints || 0,
+    };
   } catch {
     return null;
   }
 }
 
 /**
- * Set customer session into HTTP-only cookie
+ * Set customer session into HTTP-only cookie with cryptographic signature
  */
 export async function setCustomerSession(session: CustomerSession): Promise<void> {
   const cookieStore = await cookies();
-  const encoded = Buffer.from(JSON.stringify(session)).toString('base64');
+  const payload = {
+    id: session.id,
+    email: session.email,
+    name: session.name,
+    phone: session.phone,
+    role: session.role,
+  };
+  const dataB64 = Buffer.from(JSON.stringify(payload)).toString('base64');
+  const signature = signCustomerData(dataB64);
+  const token = `${dataB64}.${signature}`;
 
-  cookieStore.set(CUSTOMER_COOKIE_NAME, encoded, {
+  cookieStore.set(CUSTOMER_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -85,5 +150,12 @@ export async function setCustomerSession(session: CustomerSession): Promise<void
 export async function clearCustomerSession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(CUSTOMER_COOKIE_NAME);
+  cookieStore.set(CUSTOMER_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
 }
 

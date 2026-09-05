@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getAdminSession, setAdminSession, clearAdminSession, AdminRole } from '@/lib/admin-auth';
-import { verifyPassword } from '@/lib/customer-auth';
+import { verifyPassword, hashPassword } from '@/lib/customer-auth';
 import { syncUserSuspensionToSupabase } from '@/lib/sync-user-supabase';
 import { sanitizeProductSlug } from '@/lib/utils';
 
@@ -34,6 +34,14 @@ export async function loginAdminAction(formData: FormData) {
 
     if (!isDirectMatch && !isHashMatch) {
       return { error: 'Invalid admin credentials. Please check and retry.' };
+    }
+
+    // Transparently upgrade legacy plaintext password to secure salted scrypt hash
+    if (isDirectMatch && !user.password.includes(':')) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashPassword(password) },
+      });
     }
 
     if ((user as any).isActive === false) {

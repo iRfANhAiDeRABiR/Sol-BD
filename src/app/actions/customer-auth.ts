@@ -51,6 +51,10 @@ export async function registerCustomerAction(data: {
         return { error: 'An account with this email already exists. Please log in.' };
       }
       // User existed from past guest checkout without password
+      // Security check: verify phone matches existing record to prevent arbitrary account takeover
+      if (existing.phone && existing.phone !== phone) {
+        return { error: 'An order history already exists for this email with a different phone number. Please contact customer support.' };
+      }
       user = await prisma.user.update({
         where: { id: existing.id },
         data: {
@@ -140,6 +144,14 @@ export async function loginCustomerAction(data: {
     const isValid = verifyPassword(password, user.password);
     if (!isValid) {
       return { error: 'Invalid email/phone or password. Please check your credentials.' };
+    }
+
+    // Transparently upgrade legacy plaintext password to secure salted scrypt hash
+    if (isValid && !user.password.includes(':')) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashPassword(password) },
+      });
     }
 
     if ((user as any).isActive === false) {

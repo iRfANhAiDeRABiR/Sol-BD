@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getAdminSession } from '@/lib/admin-auth';
 
 export async function GET() {
   try {
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized. Admin session required.' }, { status: 401 });
+    }
+
     const orders = await prisma.order.findMany({
       include: {
         items: {
@@ -46,6 +52,14 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const session = await getAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized. Admin session required.' }, { status: 401 });
+    }
+    if (!['OWNER', 'ADMIN'].includes(session.role)) {
+      return NextResponse.json({ error: 'Forbidden. Admin role required to approve or cancel orders.' }, { status: 403 });
+    }
+
     const { orderId, action } = await request.json();
 
     if (!orderId || !action) {

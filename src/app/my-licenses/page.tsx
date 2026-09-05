@@ -8,15 +8,45 @@ import { toast } from 'sonner';
 
 export default function MyLicensesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [verificationInput, setVerificationInput] = useState('');
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  React.useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setCurrentUser(data.user);
+          // Automatically load customer's own vault
+          setLoading(true);
+          fetch('/api/orders')
+            .then((r) => r.json())
+            .then((resData) => {
+              if (resData.orders) {
+                setOrders(resData.orders);
+                setHasSearched(true);
+              }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchTerm.trim()) {
-      toast.error('Please enter your email or order number.');
+      toast.error('Please enter your Order Number (e.g. SBD-2026-XXXXXX).');
+      return;
+    }
+
+    if (!currentUser && !verificationInput.trim()) {
+      toast.error('Please enter the Phone Number or Email used during checkout.');
       return;
     }
 
@@ -24,13 +54,21 @@ export default function MyLicensesPage() {
     setHasSearched(true);
 
     try {
-      const isOrderNo = searchTerm.toUpperCase().startsWith('SBD-');
-      const param = isOrderNo ? `orderNumber=${encodeURIComponent(searchTerm.trim())}` : `email=${encodeURIComponent(searchTerm.trim())}`;
+      let url = `/api/orders?orderNumber=${encodeURIComponent(searchTerm.trim())}`;
+      if (verificationInput.trim()) {
+        const isEmail = verificationInput.includes('@');
+        url += isEmail
+          ? `&email=${encodeURIComponent(verificationInput.trim())}`
+          : `&phone=${encodeURIComponent(verificationInput.trim())}`;
+      }
 
-      const res = await fetch(`/api/orders?${param}`);
+      const res = await fetch(url);
       const data = await res.json();
 
-      if (data.orders) {
+      if (!res.ok) {
+        toast.error(data.error || 'Verification failed. Please check order details.');
+        setOrders([]);
+      } else if (data.orders) {
         setOrders(data.orders);
       } else {
         setOrders([]);
@@ -60,7 +98,9 @@ export default function MyLicensesPage() {
           ডিজিটাল লাইসেন্স ভল্ট (My Licenses Vault)
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-          আপনার পূর্বে ক্রয়কৃত সকল লাইসেন্স কি এবং অ্যাক্টিভেশন গাইড খুঁজে পেতে আপনার ইমেইল অথবা অর্ডার নম্বর লিখুন।
+          {currentUser
+            ? `স্বাগতম ${currentUser.name || currentUser.email}! নিচে আপনার অ্যাকাউন্টের সকল লাইসেন্স প্রদর্শিত হচ্ছে।`
+            : 'আপনার ক্রয়কৃত লাইসেন্স কি দেখতে আপনার অর্ডার নম্বর ও মোবাইল নম্বর দিন, অথবা লগইন করুন।'}
         </p>
       </div>
 
@@ -71,12 +111,23 @@ export default function MyLicensesPage() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Enter your Email (e.g. sakib@gmail.com) or Order No (e.g. SBD-2026-XXXX)"
+              placeholder="Order Number (e.g. SBD-2026-123456)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm border border-slate-200 dark:border-white/[0.08] rounded-2xl outline-none focus:border-violet-500 bg-slate-50/80 dark:bg-slate-800 text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
             />
           </div>
+          {!currentUser && (
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Phone or Email (e.g. 017XXXXXXXX)"
+                value={verificationInput}
+                onChange={(e) => setVerificationInput(e.target.value)}
+                className="w-full px-4 py-3 text-xs sm:text-sm border border-slate-200 dark:border-white/[0.08] rounded-2xl outline-none focus:border-violet-500 bg-slate-50/80 dark:bg-slate-800 text-slate-800 dark:text-white placeholder:text-slate-400 font-medium"
+              />
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}

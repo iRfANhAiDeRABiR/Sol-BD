@@ -170,10 +170,6 @@ export default function Footer() {
                 <span>অ্যাক্টিভেশন ফেইল করলে ফ্রি রিপ্লেসমেন্ট</span>
               </div>
               <div className="flex items-start gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <span>১০ সেকেন্ডে অন-স্ক্রিন ও ইমেইল ডেলিভারি</span>
-              </div>
-              <div className="flex items-start gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" />
                 <span>সিকিউর bKash / Nagad পেমেন্ট</span>
               </div>

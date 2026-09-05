@@ -70,10 +70,19 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     ],
   });
 
-  const products = rawProducts as unknown as (ProductType & { createdAt?: Date })[];
+  // Deduplicate products by id and normalized title
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+  const uniqueProducts = (rawProducts as unknown as (ProductType & { createdAt?: Date })[]).filter((p) => {
+    const titleKey = p.title.trim().toLowerCase();
+    if (seenIds.has(p.id) || seenTitles.has(titleKey)) return false;
+    seenIds.add(p.id);
+    seenTitles.add(titleKey);
+    return true;
+  });
 
   // Sort products
-  const sortedProducts = [...products].sort((a, b) => {
+  const sortedProducts = [...uniqueProducts].sort((a, b) => {
     if (sort === 'priority') {
       const orderA = a.sortOrder ?? 0;
       const orderB = b.sortOrder ?? 0;

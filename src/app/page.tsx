@@ -38,7 +38,14 @@ export default async function HomePage() {
         { createdAt: 'desc' },
       ],
     });
-    products = rawProducts as unknown as ProductType[];
+    const seen = new Set<string>();
+    products = (rawProducts as unknown as ProductType[]).filter((p) => {
+      const key = p.title.trim().toLowerCase();
+      if (seen.has(p.id) || seen.has(key)) return false;
+      seen.add(p.id);
+      seen.add(key);
+      return true;
+    });
   } catch (error) {
     console.error('Error fetching homepage catalog:', error);
   }

@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/customer-auth';
 import CustomerAuthClient from '@/components/auth/CustomerAuthClient';
+import AuthBackgroundWrapper from '@/components/auth/AuthBackgroundWrapper';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,11 +23,11 @@ export default async function CustomerLoginPage(
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <AuthBackgroundWrapper>
       <Suspense fallback={<div className="w-full max-w-md h-96 rounded-3xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />}>
         <CustomerAuthClient defaultTab="login" />
       </Suspense>
-    </div>
+    </AuthBackgroundWrapper>
   );
 }
 

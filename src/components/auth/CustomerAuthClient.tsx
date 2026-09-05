@@ -138,7 +138,9 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
       </div>
 
       {/* Card Container */}
-      <div className="bg-white/95 dark:bg-slate-900/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-xl p-6 sm:p-8 backdrop-blur-xl">
+      <div className="bg-white/95 dark:bg-[#0f172a]/90 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 shadow-2xl dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.6)] p-6 sm:p-8 backdrop-blur-xl relative overflow-hidden transition-all">
+        {/* Subtle upper border highlight */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent pointer-events-none" />
         {isSuspended && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 flex items-start gap-3 text-xs leading-relaxed">
             <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-500" />

@@ -233,3 +233,97 @@
 .pause-hover:hover * {
   animation-play-state: paused !important;
 }
+
+/* Customer Auth Page Premium Background */
+.auth-bg-base {
+  background-color: #020617;
+  background-image: 
+    radial-gradient(circle at 50% 35%, rgba(74, 50, 180, 0.14), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(0, 174, 239, 0.08), transparent 38%),
+    radial-gradient(circle at 15% 75%, rgba(124, 58, 237, 0.07), transparent 35%);
+}
+
+.light .auth-bg-base,
+:root:not(.dark) .auth-bg-base {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(circle at 50% 35%, rgba(124, 58, 237, 0.07), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.05), transparent 40%),
+    radial-gradient(circle at 15% 75%, rgba(6, 182, 212, 0.04), transparent 35%);
+}
+
+.auth-grid-pattern {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, black 40%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 45%, black 40%, transparent 85%);
+}
+
+.auth-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(2, 6, 23, 0.35) 75%,
+    rgba(2, 6, 23, 0.7) 100%
+  );
+}
+
+.light .auth-vignette,
+:root:not(.dark) .auth-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(241, 245, 249, 0.4) 80%,
+    rgba(241, 245, 249, 0.8) 100%
+  );
+}
+
+.auth-card-spotlight {
+  background: radial-gradient(
+    circle at center,
+    rgba(124, 58, 237, 0.12) 0%,
+    rgba(79, 70, 229, 0.05) 45%,
+    transparent 70%
+  );
+}
+
+@keyframes ambientGlowFloat1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(25px, -20px) scale(1.05);
+  }
+  100% {
+    transform: translate(-15px, 15px) scale(0.96);
+  }
+}
+
+@keyframes ambientGlowFloat2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-20px, 25px) scale(1.06);
+  }
+  100% {
+    transform: translate(15px, -15px) scale(0.95);
+  }
+}
+
+.animate-ambient-1 {
+  animation: ambientGlowFloat1 24s ease-in-out infinite alternate;
+}
+
+.animate-ambient-2 {
+  animation: ambientGlowFloat2 28s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ambient-1,
+  .animate-ambient-2 {
+    animation: none !important;
+  }
+}

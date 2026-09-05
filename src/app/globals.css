@@ -225,3 +225,13 @@
   mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
 }
+
+.mask-fade-y {
+  mask-image: linear-gradient(180deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.pause-hover:hover,
+.pause-hover:hover * {
+  animation-play-state: paused !important;
+}

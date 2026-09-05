@@ -57,6 +57,14 @@ module.exports = {
           "0%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        marqueeUp: {
+          "0%": { transform: "translateY(0%)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
+        marqueeDown: {
+          "0%": { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0%)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "200% 0" },
           "100%": { backgroundPosition: "-200% 0" },
@@ -68,6 +76,8 @@ module.exports = {
       },
       animation: {
         marquee: "marquee 35s linear infinite",
+        "marquee-up": "marqueeUp 28s linear infinite",
+        "marquee-down": "marqueeDown 28s linear infinite",
         shimmer: "shimmer 8s linear infinite",
         pulseGlow: "pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },

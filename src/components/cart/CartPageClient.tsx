@@ -446,7 +446,7 @@ export default function CartPageClient() {
                     required
                     value={customer.name}
                     onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    placeholder="Enter your full name"
+                    placeholder="Customer Name"
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                   />
                 </div>
@@ -482,7 +482,7 @@ export default function CartPageClient() {
                       required
                       value={customer.email}
                       onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                      placeholder="Enter your email address"
+                      placeholder="customer@email.com"
                       className="w-full h-10 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50 mt-auto"
                     />
                   </div>

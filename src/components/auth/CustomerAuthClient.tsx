@@ -188,7 +188,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Enter email or mobile number"
+                  placeholder="Email or mobile number"
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                   disabled={loading}
@@ -253,7 +253,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                 <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder="Customer Name"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   disabled={loading}
@@ -271,7 +271,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder="customer@email.com"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   disabled={loading}

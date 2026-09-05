@@ -51,8 +51,8 @@ export default async function HomePage() {
       <ProductGrid products={products} categories={categories} />
       <WhyChooseUs />
       <TestimonialsSection />
-      <FAQSection />
       <NewsletterSection />
+      <FAQSection />
       <ContactSection />
     </div>
   );

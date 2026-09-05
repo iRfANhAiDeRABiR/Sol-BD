@@ -10,11 +10,12 @@ export const metadata = {
   description: 'Create a free customer account on SolutionsBD for instant digital software delivery.',
 };
 
-export default async function CustomerRegisterPage({
-  searchParams,
-}: {
-  searchParams: { redirect?: string };
-}) {
+export default async function CustomerRegisterPage(
+  props: {
+    searchParams: Promise<{ redirect?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await getCustomerSession();
   if (session) {
     redirect(searchParams.redirect || '/account');

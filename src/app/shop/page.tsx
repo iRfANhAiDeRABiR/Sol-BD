@@ -10,14 +10,15 @@ import { Search } from 'lucide-react';
 export const revalidate = 0;
 
 interface ShopPageProps {
-  searchParams: {
+  searchParams?: Promise<{
     cat?: string;
     q?: string;
     sort?: string;
-  };
+  }>;
 }
 
-export default async function ShopPage({ searchParams }: ShopPageProps) {
+export default async function ShopPage(props: ShopPageProps) {
+  const searchParams = (await props.searchParams) || {};
   const selectedCat = searchParams.cat ? decodeURIComponent(searchParams.cat) : 'all';
   const query = searchParams.q ? decodeURIComponent(searchParams.q) : '';
   const sort = searchParams.sort || 'newest';

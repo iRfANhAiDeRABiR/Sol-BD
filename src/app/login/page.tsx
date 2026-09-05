@@ -10,11 +10,12 @@ export const metadata = {
   description: 'Sign in to access your digital software licenses, keys, and order history.',
 };
 
-export default async function CustomerLoginPage({
-  searchParams,
-}: {
-  searchParams: { redirect?: string };
-}) {
+export default async function CustomerLoginPage(
+  props: {
+    searchParams: Promise<{ redirect?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await getCustomerSession();
   if (session) {
     redirect(searchParams.redirect || '/account');

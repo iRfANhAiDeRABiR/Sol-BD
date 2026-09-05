@@ -22,13 +22,17 @@ import QuickActionDock from '@/components/admin/QuickActionDock';
 
 export const dynamic = 'force-dynamic';
 
+async function measureDbLatency(): Promise<number> {
+  const startPerf = Date.now();
+  await prisma.$queryRawUnsafe('SELECT 1');
+  return Math.max(1, Date.now() - startPerf);
+}
+
 export default async function AdminOverviewPage() {
   const session = await getAdminSession();
 
   // 1. Measure DB query latency
-  const startPerf = performance.now();
-  await prisma.$queryRawUnsafe('SELECT 1');
-  const dbLatencyMs = Math.max(1, Math.round(performance.now() - startPerf));
+  const dbLatencyMs = await measureDbLatency();
 
   // 2. Fetch Aggregated Metrics & Recent Orders concurrently
   const [

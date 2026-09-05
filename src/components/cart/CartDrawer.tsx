@@ -12,12 +12,13 @@ import { toast } from 'sonner';
 
 export default function CartDrawer() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/admin')) return null;
-
   const contextCart = useCart();
   const zustandCart = useCartStore();
+  const [inputCoupon, setInputCoupon] = useState('');
 
   const { isOpen, closeCart } = zustandCart;
+
+  if (pathname?.startsWith('/admin') || !isOpen) return null;
 
   // Active items: prefer CartProvider, fallback to zustand
   const activeItems =
@@ -65,10 +66,6 @@ export default function CartDrawer() {
       : zustandCart.items.length > 0
       ? zustandCart.total()
       : Math.max(0, subtotal - discountAmount);
-
-  const [inputCoupon, setInputCoupon] = useState('');
-
-  if (!isOpen) return null;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();

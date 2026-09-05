@@ -6,10 +6,11 @@ import ProductFormClient from '@/components/admin/ProductFormClient';
 export const dynamic = 'force-dynamic';
 
 interface EditProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function EditProductPage({ params }: EditProductPageProps) {
+export default async function EditProductPage(props: EditProductPageProps) {
+  const params = await props.params;
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({
       where: { id: params.id },

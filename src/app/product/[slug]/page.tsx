@@ -6,12 +6,13 @@ import { ProductType } from '@/lib/types';
 import type { Metadata } from 'next';
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const decodedSlug = decodeURIComponent(params.slug);
   const product = await prisma.product.findFirst({
     where: {
@@ -34,7 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ProductDetailPage({ params }: Props) {
+export default async function ProductDetailPage(props: Props) {
+  const params = await props.params;
   const decodedSlug = decodeURIComponent(params.slug);
   const product = await prisma.product.findFirst({
     where: {

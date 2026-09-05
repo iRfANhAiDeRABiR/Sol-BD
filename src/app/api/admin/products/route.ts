@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     }
 
     // Generate unique slug
-    let baseSlug = (customSlug || title)
+    const baseSlug = (customSlug || title)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');

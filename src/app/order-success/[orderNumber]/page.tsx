@@ -8,9 +8,9 @@ import { getAdminSession } from '@/lib/admin-auth';
 import { getCustomerSession } from '@/lib/customer-auth';
 
 interface Props {
-  params: {
+  params: Promise<{
     orderNumber: string;
-  };
+  }>;
 }
 
 export const metadata: Metadata = {
@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   description: 'Your digital software order confirmation and instant license key delivery.',
 };
 
-export default async function OrderSuccessPage({ params }: Props) {
+export default async function OrderSuccessPage(props: Props) {
+  const params = await props.params;
   const adminSession = await getAdminSession();
   const customerSession = await getCustomerSession();
 

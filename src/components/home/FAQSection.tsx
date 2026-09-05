@@ -34,7 +34,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq-section" className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <section id="faq-section" className="max-w-4xl mx-auto px-3 sm:px-5 py-12">
       <div className="text-center mb-8 space-y-2">
         <span className="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/60 px-3 py-1 rounded-full inline-flex items-center gap-1">
           <HelpCircle className="w-3.5 h-3.5" />

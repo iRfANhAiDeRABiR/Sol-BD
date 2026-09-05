@@ -188,7 +188,7 @@ export default function CustomerDashboardClient({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-8 space-y-8">
       {/* Top Header Card */}
       <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-8 shadow-sm backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">

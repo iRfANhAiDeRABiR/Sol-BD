@@ -61,7 +61,7 @@ export default function HeroBanner() {
   const slide = slides[currentSlide];
 
   return (
-    <section className="relative px-2 sm:px-4 lg:px-6 pt-2 pb-6 max-w-7xl mx-auto">
+    <section className="relative px-2 sm:px-3 lg:px-5 pt-2 pb-6 max-w-[1440px] mx-auto">
       <div className="relative w-full aspect-[16/10] sm:aspect-[16/8] lg:aspect-[21/9] max-h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-violet-500/20 bg-slate-900">
         {/* Background Image with Dark Gradient Overlay */}
         <div className="absolute inset-0">

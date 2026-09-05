@@ -69,7 +69,7 @@ export default function ProductGrid({ products, categories }: ProductGridProps) 
   });
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-8">
       {/* 1. Clean Top Header: Title on Left, Sort Dropdown on Right */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>

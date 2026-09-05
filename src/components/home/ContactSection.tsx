@@ -53,7 +53,7 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <section className="w-full max-w-[1440px] mx-auto px-3 sm:px-5 py-10 sm:py-16">
       <div className="rounded-[28px] sm:rounded-[36px] bg-slate-50 dark:bg-[#070b15] border border-slate-200 dark:border-slate-800/90 p-6 sm:p-10 md:p-14 shadow-xl dark:shadow-2xl relative overflow-hidden transition-colors duration-300">
         {/* Glow ambient background circles */}
         <div className="absolute -top-24 -left-24 w-80 h-80 bg-violet-600/5 dark:bg-violet-600/10 blur-[100px] pointer-events-none" />

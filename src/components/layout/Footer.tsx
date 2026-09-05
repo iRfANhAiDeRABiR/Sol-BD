@@ -11,7 +11,7 @@ export default function Footer() {
   if (pathname?.startsWith('/admin')) return null;
   return (
     <footer className="w-full bg-slate-950 text-slate-300 pt-14 pb-8 border-t border-slate-800 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 pb-12 border-b border-slate-800/80">
           {/* Col 1 & 2: Brand Info */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2 space-y-4">

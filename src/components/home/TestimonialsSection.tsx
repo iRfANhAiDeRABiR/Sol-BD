@@ -52,7 +52,7 @@ const testimonials: Testimonial[] = [
 export default function TestimonialsSection() {
   return (
     <section className="py-12 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-5 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <span className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full inline-flex items-center gap-1.5">

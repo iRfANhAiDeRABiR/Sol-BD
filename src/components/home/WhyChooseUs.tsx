@@ -30,7 +30,7 @@ export default function WhyChooseUs() {
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-10">
       <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
         <span className="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/60 px-3 py-1 rounded-full">
           কেন SolutionsBD থেকে কিনবেন?

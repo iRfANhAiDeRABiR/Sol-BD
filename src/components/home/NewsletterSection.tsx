@@ -33,7 +33,7 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <section className="w-full max-w-[1440px] mx-auto px-3 sm:px-5 py-6 sm:py-10">
       <div className="rounded-[28px] sm:rounded-[36px] bg-slate-50 dark:bg-[#0c1022] border border-slate-200 dark:border-indigo-500/20 shadow-xl dark:shadow-2xl relative overflow-hidden py-12 sm:py-16 md:py-20 px-6 sm:px-12 text-center transition-colors duration-300">
         {/* Subtle Ambient Radial Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-36 bg-gradient-to-b from-indigo-500/10 dark:from-indigo-500/15 via-violet-500/5 dark:via-violet-500/10 to-transparent blur-3xl pointer-events-none" />

@@ -44,7 +44,7 @@ export default function OrderSuccessClientView({
   const isPaid = order.paymentStatus === 'PAID';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-5 py-10 space-y-8">
       {/* Top Success Banner */}
       <div className="text-center space-y-3 bg-white/95 dark:bg-[#0f172a]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
         <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">

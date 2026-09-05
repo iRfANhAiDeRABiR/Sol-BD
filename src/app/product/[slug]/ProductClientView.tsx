@@ -124,7 +124,7 @@ export default function ProductClientView({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6 space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
         <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400">

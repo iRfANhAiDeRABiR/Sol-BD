@@ -52,7 +52,7 @@ function getCategoryIcon(cat: CategoryType) {
 
 export default function CategorySection({ categories }: CategorySectionProps) {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">

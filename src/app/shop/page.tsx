@@ -123,7 +123,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const activeCategory = selectedCat !== 'all' ? categories.find((c) => c.slug === selectedCat) : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6 space-y-6">
       {/* Header Banner */}
       <div className="glass-card rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-violet-900 to-indigo-900 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2 max-w-xl">

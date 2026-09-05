@@ -36,7 +36,7 @@ export default function FlashSale({ products }: FlashSaleProps) {
   if (flashProducts.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-8">
       {/* Header with Countdown Timer */}
       <div className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-4 sm:p-5 text-white shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3 text-center sm:text-left">

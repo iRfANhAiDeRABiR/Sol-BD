@@ -50,7 +50,7 @@ export default function MyLicensesPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+    <div className="max-w-5xl mx-auto px-3 sm:px-5 py-10 space-y-8">
       {/* Page Header */}
       <div className="text-center space-y-2">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center mx-auto shadow-md">

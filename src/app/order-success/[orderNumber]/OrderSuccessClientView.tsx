@@ -17,6 +17,7 @@ import {
 import { OrderType } from '@/lib/types';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import PrintableInvoice from '@/components/order/PrintableInvoice';
 
 interface OrderSuccessClientViewProps {
   order: OrderType;
@@ -44,9 +45,9 @@ export default function OrderSuccessClientView({
   const isPaid = order.paymentStatus === 'PAID';
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-5 py-10 space-y-8">
-      {/* Top Success Banner */}
-      <div className="text-center space-y-3 bg-white/95 dark:bg-[#0f172a]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+    <div className="max-w-5xl mx-auto px-3 sm:px-5 py-10 space-y-8 print:p-0 print:m-0 print:max-w-none print:space-y-0">
+      {/* Top Success Banner (Screen Only) */}
+      <div className="text-center space-y-3 bg-white/95 dark:bg-[#0f172a]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm no-print print:hidden">
         <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
           <CheckCircle2 className="w-9 h-9" />
         </div>
@@ -66,9 +67,9 @@ export default function OrderSuccessClientView({
         </div>
       </div>
 
-      {/* INSTANT KEY REVEAL VAULT (If Paid) */}
+      {/* INSTANT KEY REVEAL VAULT (If Paid - Screen Only) */}
       {isPaid ? (
-        <div className="glass-card rounded-3xl p-6 sm:p-8 border-2 border-violet-500/30 bg-gradient-to-br from-violet-50/50 via-white to-sky-50/50 dark:from-violet-950/20 dark:via-[#0f172a] dark:to-sky-950/20 shadow-xl space-y-6">
+        <div className="glass-card rounded-3xl p-6 sm:p-8 border-2 border-violet-500/30 bg-gradient-to-br from-violet-50/50 via-white to-sky-50/50 dark:from-violet-950/20 dark:via-[#0f172a] dark:to-sky-950/20 shadow-xl space-y-6 no-print print:hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-violet-100 dark:border-white/[0.08] pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center">
@@ -141,8 +142,8 @@ export default function OrderSuccessClientView({
           </div>
         </div>
       ) : (
-        /* Manual MFS Pending Verification Box */
-        <div className="bg-amber-50 dark:bg-amber-950/30 rounded-3xl p-6 sm:p-8 border border-amber-200 dark:border-amber-800/40 space-y-4">
+        /* Manual MFS Pending Verification Box (Screen Only) */
+        <div className="bg-amber-50 dark:bg-amber-950/30 rounded-3xl p-6 sm:p-8 border border-amber-200 dark:border-amber-800/40 space-y-4 no-print print:hidden">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center">
               <Clock className="w-5 h-5 animate-spin" />
@@ -174,8 +175,8 @@ export default function OrderSuccessClientView({
         </div>
       )}
 
-      {/* Order Details Invoice Card */}
-      <div className="bg-white/95 dark:bg-[#0f172a]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-6">
+      {/* Order Details Invoice Card (Screen Only) */}
+      <div className="bg-white/95 dark:bg-[#0f172a]/95 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm space-y-6 no-print print:hidden">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.08] pb-4">
           <div>
             <h3 className="text-base font-black text-slate-900 dark:text-white">ইনভয়েস সারসংক্ষেপ</h3>
@@ -246,8 +247,8 @@ export default function OrderSuccessClientView({
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+      {/* Bottom Navigation (Screen Only) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 no-print print:hidden">
         <Link
           href="/my-licenses"
           className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center gap-1"
@@ -262,6 +263,9 @@ export default function OrderSuccessClientView({
           আরও সফটওয়্যার ব্রাউজ করুন
         </Link>
       </div>
+
+      {/* Dedicated Printable Commercial Invoice (Print Only) */}
+      <PrintableInvoice order={order} />
     </div>
   );
 }

@@ -99,7 +99,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full px-1 sm:px-3 py-2 pointer-events-none">
+    <header className="sticky top-0 z-40 w-full px-1 sm:px-3 py-2 pointer-events-none no-print print:hidden">
       <nav className="glass-nav rounded-2xl mx-auto w-full max-w-[1440px] px-3 sm:px-5 py-2.5 transition-all duration-300 pointer-events-auto">
         <div className="flex items-center justify-between gap-3">
           {/* Brand Logo */}

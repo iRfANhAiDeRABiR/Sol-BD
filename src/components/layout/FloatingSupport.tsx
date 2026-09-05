@@ -13,7 +13,7 @@ export default function FloatingSupport() {
   };
 
   return (
-    <div className="fixed bottom-16 md:bottom-5 right-4 md:right-5 z-40 flex flex-col items-end gap-2.5">
+    <div className="fixed bottom-16 md:bottom-5 right-4 md:right-5 z-40 flex flex-col items-end gap-2.5 no-print print:hidden">
       {/* Scroll to Top */}
       <button
         onClick={scrollToTop}

@@ -10,7 +10,7 @@ export default function Footer() {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
   return (
-    <footer className="w-full bg-slate-950 text-slate-300 pt-14 pb-8 border-t border-slate-800 relative">
+    <footer className="w-full bg-slate-950 text-slate-300 pt-14 pb-8 border-t border-slate-800 relative no-print print:hidden">
       <div className="max-w-[1440px] mx-auto px-3 sm:px-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 pb-12 border-b border-slate-800/80">
           {/* Col 1 & 2: Brand Info */}

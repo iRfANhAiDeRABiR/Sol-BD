@@ -8,7 +8,7 @@ export default function TopTicker() {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
   return (
-    <div className="w-full bg-slate-900 dark:bg-slate-950 text-white text-[11px] font-medium py-1.5 px-2 sm:px-3 border-b border-purple-500/20 relative z-50 overflow-hidden">
+    <div className="w-full bg-slate-900 dark:bg-slate-950 text-white text-[11px] font-medium py-1.5 px-2 sm:px-3 border-b border-purple-500/20 relative z-50 overflow-hidden no-print print:hidden">
       <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-3">
         {/* Left: Quick Contact */}
         <div className="flex items-center gap-2 flex-shrink-0">

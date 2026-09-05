@@ -31,7 +31,7 @@ export default function MobileBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/[0.08] px-2 py-2 flex items-center justify-around select-none">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/[0.08] px-2 py-2 flex items-center justify-around select-none no-print print:hidden">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);

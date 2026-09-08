@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { OrderType } from '@/lib/types';
@@ -199,7 +199,7 @@ export default function PrintableInvoice({ order }: PrintableInvoiceProps) {
           <span className="text-emerald-600">✓</span>
           <span>আমাদের প্রতিশ্রুতি:</span>
           <span className="font-semibold text-slate-700">
-            ১০০% জেনুইন অফিশিয়াল লাইসেন্স কি • অ্যাক্টিভেশন ফেইল করলে ফ্রি রিপ্লেসমেন্ট গ্যারান্টি
+            ১০০% জেনুইন অফিশিয়াল লাইসেন্স কি
           </span>
         </div>
         <p className="leading-normal">

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Check, Zap, Star, ShieldCheck, Heart } from 'lucide-react';
+import { ShoppingCart, Check, Zap, Heart, ShieldCheck } from 'lucide-react';
 import { formatPrice, formatImageUrl } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { useCartStore } from '@/lib/cart-store';
@@ -50,7 +50,7 @@ export function ProductCard({
   const price = product ? defaultVariant?.price ?? 0 : propPrice ?? 0;
   const originalPrice = product ? defaultVariant?.originalPrice : propOriginalPrice;
   const outOfStock = product ? defaultVariant?.stock === 0 : propOutOfStock;
-  const badge = product?.isFlashSale ? '🔥 Flash Deal' : product?.isFeatured ? 'Featured' : propBadge;
+  const badge = product?.isFlashSale ? '🔥 Flash Deal' : product?.isFeatured ? 'Bestseller' : propBadge;
 
   const discountPercent =
     originalPrice && originalPrice > price
@@ -109,100 +109,124 @@ export function ProductCard({
   };
 
   return (
-    <div className="group rounded-2xl overflow-hidden bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] hover:border-violet-500/40 dark:hover:border-violet-500/40 shadow-sm hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 flex flex-col justify-between relative backdrop-blur-xl">
-      {/* Top Badges & Wishlist Trigger */}
-      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 pointer-events-none">
-        {discountPercent && (
-          <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
-            -{discountPercent}%
-          </span>
-        )}
-        {badge && (
-          <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
-            {badge}
-          </span>
-        )}
-      </div>
-
-      <button
-        onClick={toggleWishlist}
-        title={isWishlisted ? 'Remove Wishlist' : 'Add Wishlist'}
-        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors shadow-sm"
-      >
-        <Heart
-          className={`w-4 h-4 transition-transform active:scale-125 ${
-            isWishlisted ? 'fill-rose-500 text-rose-500' : ''
-          }`}
-        />
-      </button>
-
-      {/* Product Image Wrap */}
-      <Link
-        href={`/product/${slug}`}
-        className="relative w-full aspect-[4/3] sm:aspect-square bg-slate-100 dark:bg-slate-800/40 overflow-hidden block"
-      >
+    <div
+      onClick={() => router.push(`/product/${slug}`)}
+      className="group rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between border bg-white dark:bg-slate-900/90 hover:shadow-xl hover:border-violet-500/40 relative"
+      style={{
+        borderColor: 'hsl(var(--border))',
+        boxShadow: '0 2px 14px hsla(258,78%,55%,0.06)',
+      }}
+    >
+      {/* Product Image Area */}
+      <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800/50">
         <Image
           src={image}
           alt={name}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent pointer-events-none" />
 
-        {outOfStock && (
-          <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center text-rose-400 font-black text-xs uppercase tracking-wider">
-            Out of Stock
-          </div>
+        {/* Wishlist Heart Icon */}
+        <button
+          onClick={toggleWishlist}
+          title={isWishlisted ? 'Remove Wishlist' : 'Add Wishlist'}
+          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors shadow-sm"
+        >
+          <Heart
+            className={`w-4 h-4 transition-transform active:scale-125 ${
+              isWishlisted ? 'fill-rose-500 text-rose-500' : ''
+            }`}
+          />
+        </button>
+
+        {/* Stock Out Overlay */}
+        {outOfStock ? (
+          <>
+            <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
+            <span
+              className="absolute top-2.5 left-2.5 text-[10px] font-black tracking-wider text-white px-2.5 py-1 rounded-full shadow-md"
+              style={{
+                background: 'linear-gradient(135deg, hsl(0,80%,55%), hsl(15,90%,55%))',
+              }}
+            >
+              STOCK OUT
+            </span>
+          </>
+        ) : (
+          discountPercent && (
+            <span
+              className="absolute top-2.5 left-2.5 text-[10.5px] font-bold text-white px-2.5 py-0.5 rounded-full shadow-md"
+              style={{
+                background: 'hsl(32, 100%, 50%)',
+              }}
+            >
+              -{discountPercent}%
+            </span>
+          )
         )}
 
-        {/* Feature Pills */}
-        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-bold text-white z-10">
-          <span className="bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10">
-            <Zap className="w-3 h-3 text-amber-400" />
-            Instant Key
+        {/* Feature / Flash Badge */}
+        {!outOfStock && badge && (
+          <span
+            className="absolute bottom-2.5 right-2.5 text-[9.5px] font-bold text-white px-2.5 py-0.5 rounded-full shadow-md"
+            style={{
+              background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
+            }}
+          >
+            {badge}
           </span>
-          <span className="bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10">
-            <ShieldCheck className="w-3 h-3 text-emerald-400" />
-            Genuine
-          </span>
-        </div>
-      </Link>
+        )}
 
-      {/* Card Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-        <div className="space-y-1.5">
+        {/* Instant Delivery Pill */}
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 text-[9.5px] font-bold text-white bg-slate-950/75 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+          <Zap className="w-2.5 h-2.5 text-amber-400" />
+          <span>Instant Key</span>
+        </div>
+      </div>
+
+      {/* Product Content Details */}
+      <div className="p-3.5 flex-1 flex flex-col justify-between gap-3">
+        <div className="space-y-1">
           {product?.brand && (
-            <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 block">
+            <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 block font-sora">
               {product.brand}
             </span>
           )}
           <Link
             href={`/product/${slug}`}
-            className="text-slate-900 dark:text-slate-100 hover:text-violet-600 dark:hover:text-violet-400 font-bold text-xs sm:text-sm line-clamp-2 leading-snug transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors"
           >
             {name}
           </Link>
         </div>
 
-        {/* Pricing & Action Buttons */}
-        <div className="space-y-3 pt-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">
-              {formatPrice(price)}
-            </span>
-            {originalPrice && originalPrice > price && (
-              <span className="text-xs text-slate-400 line-through">
-                {formatPrice(originalPrice)}
-              </span>
-            )}
+        {/* Pricing & Interactive Actions */}
+        <div className="space-y-2.5 pt-1">
+          <div className="flex items-baseline justify-between gap-2">
+            <div>
+              <div className="font-sora font-black text-base sm:text-lg text-foreground">
+                {formatPrice(price)}
+              </div>
+              {originalPrice && originalPrice > price && (
+                <div className="text-xs text-muted-foreground line-through">
+                  {formatPrice(originalPrice)}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              <ShieldCheck className="w-3 h-3" />
+              <span>Genuine</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleQuickAdd}
               disabled={outOfStock}
-              className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 border ${
+              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 border ${
                 added
                   ? 'bg-emerald-600 text-white border-emerald-600'
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-800 dark:text-slate-200 border-slate-200/60 dark:border-white/[0.08]'
@@ -215,7 +239,11 @@ export function ProductCard({
             <button
               onClick={handleBuyNow}
               disabled={outOfStock}
-              className="brand-gradient-btn text-white py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95 disabled:opacity-50"
+              className="text-white py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md disabled:opacity-50 hover:brightness-110"
+              style={{
+                background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
+                boxShadow: '0 2px 10px hsla(258,78%,55%,0.25)',
+              }}
             >
               <Zap className="w-3 h-3" />
               <span>Buy Now</span>

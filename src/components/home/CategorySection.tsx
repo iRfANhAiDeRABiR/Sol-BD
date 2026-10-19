@@ -52,13 +52,13 @@ function getCategoryIcon(cat: CategoryType) {
 
 export default function CategorySection({ categories }: CategorySectionProps) {
   return (
-    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6">
-      <div className="flex items-center justify-between mb-4">
+    <section className="max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6 py-6">
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            ক্যাটাগরি সমূহ (Browse Categories)
+          <h2 className="text-xl sm:text-2xl font-black font-sora text-slate-900 dark:text-white tracking-tight">
+            ক্যাটাগরি সমূহ <span className="text-violet-600 dark:text-violet-400 font-bold text-base sm:text-lg">(Categories)</span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
             আপনার প্রয়োজনীয় ডিজিটাল সফটওয়্যার এবং লাইসেন্স কি বেছে নিন
           </p>
         </div>
@@ -71,17 +71,22 @@ export default function CategorySection({ categories }: CategorySectionProps) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {categories.map((cat) => (
           <Link
             key={cat.id}
             href={`/shop?cat=${cat.slug}`}
-            className="group glass-card p-4 rounded-2xl flex flex-col items-center text-center gap-2 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/10 transition-all hover:-translate-y-1 bg-white/90 dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-white/[0.08]"
+            className="group p-4 rounded-2xl flex flex-col items-center text-center gap-2.5 transition-all duration-300 hover:-translate-y-1 border shadow-xs hover:shadow-lg hover:border-violet-500/40"
+            style={{
+              background: 'var(--glass-bg)',
+              borderColor: 'hsl(var(--border))',
+              backdropFilter: 'blur(16px)',
+            }}
           >
-            <div className="w-12 h-12 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 group-hover:bg-violet-100/50 dark:group-hover:bg-violet-950/50 flex items-center justify-center transition-colors border border-slate-200/60 dark:border-white/[0.08]">
+            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 group-hover:bg-violet-500/20 flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-violet-500/15">
               {getCategoryIcon(cat)}
             </div>
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+            <h3 className="text-xs font-bold font-sora text-slate-800 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
               {cat.name}
             </h3>
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Instant Key</span>

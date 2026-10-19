@@ -48,6 +48,36 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
 
+    /* Solutions BD / Shahed Store design tokens */
+    --brand-h: 258;
+    --brand-s: 78%;
+    --brand-l: 55%;
+    --accent-h: 42;
+    --accent-s: 96%;
+    --accent-l: 58%;
+    --brand2-h: 200;
+    --brand2-s: 90%;
+    --brand2-l: 45%;
+    --brand3-h: 330;
+    --brand3-s: 85%;
+    --brand3-l: 55%;
+    --brand4-h: 162;
+    --brand4-s: 72%;
+    --brand4-l: 38%;
+
+    --neon-gold: hsl(var(--accent-h), var(--accent-s), 50%);
+    --neon-violet: hsl(var(--brand-h), var(--brand-s), var(--brand-l));
+    --neon-cyan: hsl(var(--brand2-h), var(--brand2-s), var(--brand2-l));
+    --neon-emerald: hsl(var(--brand4-h), var(--brand4-s), var(--brand4-l));
+
+    --glow-gold: 0 4px 20px hsla(var(--accent-h), var(--accent-s), 50%, 0.3), 0 1px 4px hsla(var(--accent-h), var(--accent-s), 50%, 0.15);
+    --glow-violet: 0 4px 20px hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.25), 0 1px 4px hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.12);
+    --glow-cyan: 0 4px 20px hsla(var(--brand2-h), var(--brand2-s), var(--brand2-l), 0.25), 0 1px 4px hsla(var(--brand2-h), var(--brand2-s), var(--brand2-l), 0.12);
+
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: hsla(var(--brand-h), var(--brand-s), 75%, 0.22);
+    --glass-shadow: 0 4px 24px rgba(20, 25, 41, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
     /* SolutionsBD standard surface & text tokens (Light) */
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
@@ -101,6 +131,10 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    --glass-bg: rgba(15, 23, 42, 0.78);
+    --glass-border: hsla(var(--brand-h), var(--brand-s), 70%, 0.22);
+    --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
     /* SolutionsBD standard surface & text tokens (Dark) */
     --bg-card: rgba(15, 23, 42, 0.85);
@@ -323,9 +357,108 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-ambient-1,
-  .animate-ambient-2 {
+  .animate-ambient-2,
+  .offer-marquee-track {
     animation: none !important;
   }
+}
+
+/* ==========================================================================
+   SHAHED STORE MODERN DIGITAL MARKETPLACE THEMING & ANIMATIONS
+   ========================================================================== */
+@keyframes offerMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.offer-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: offerMarquee 42s linear infinite;
+}
+
+.offer-marquee:hover .offer-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px hsla(0, 84%, 60%, 0.25), 0 2px 10px hsla(0, 84%, 50%, 0.55);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px hsla(0, 84%, 60%, 0.32), 0 2px 14px hsla(0, 84%, 50%, 0.7);
+  }
+}
+
+@keyframes liveDot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes livePing {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  80%, 100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(124, 58, 237, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .dot-grid {
+  background-image: radial-gradient(rgba(167, 139, 250, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Hero Readability Wash variables */
+.hero-readable {
+  --hero-action-fill: linear-gradient(135deg, hsl(258, 78%, 55%) 0%, hsl(200, 90%, 45%) 100%);
+  --hero-action-foreground: #ffffff;
+  --hero-shadow: 0 4px 18px hsla(258, 78%, 55%, 0.38);
+  --hero-surface: rgba(255, 255, 255, 0.12);
+  --hero-border: rgba(255, 255, 255, 0.22);
+  --hero-tint: rgba(124, 58, 237, 0.18);
+  --hero-accent: #38bdf8;
+  --hero-ink: #ffffff;
+  --hero-body: rgba(255, 255, 255, 0.85);
+  --hero-muted: rgba(255, 255, 255, 0.6);
+  --hero-readability-wash: linear-gradient(90deg, rgba(10, 15, 30, 0.94) 0%, rgba(10, 15, 30, 0.82) 48%, rgba(10, 15, 30, 0.2) 80%, transparent 100%);
+}
+
+.footer-tagline-highlight mark.fth-g {
+  background: transparent;
+  color: hsl(258, 78%, 55%);
+  font-weight: 700;
+}
+
+.footer-tagline-highlight mark.fth-o {
+  background: transparent;
+  color: hsl(25, 100%, 55%);
+  font-weight: 700;
+}
+
+.dark .footer-tagline-highlight mark.fth-g {
+  color: hsl(258, 85%, 68%);
+}
+
+.dark .footer-tagline-highlight mark.fth-o {
+  color: hsl(35, 100%, 62%);
 }
 
 /* ==========================================================================

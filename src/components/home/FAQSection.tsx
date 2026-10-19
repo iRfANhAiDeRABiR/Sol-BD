@@ -40,7 +40,7 @@ export default function FAQSection() {
           <HelpCircle className="w-3.5 h-3.5" />
           সচরাচর জিজ্ঞাসিত প্রশ্ন (FAQ)
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-black font-sora text-slate-900 dark:text-white tracking-tight">
           আপনার যেকোনো প্রশ্নের উত্তর
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">

@@ -47,6 +47,11 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],
+        sora: ["var(--font-sora)", "system-ui", "sans-serif"],
+        fira: ["Fira Code", "monospace"],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -73,6 +78,10 @@ module.exports = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        livePulse: {
+          "0%, 100%": { transform: "scale(1)", boxShadow: "0 0 0 3px hsla(0,84%,60%,0.25), 0 2px 10px hsla(0,84%,50%,0.55)" },
+          "50%": { transform: "scale(1.06)", boxShadow: "0 0 0 5px hsla(0,84%,60%,0.32), 0 2px 14px hsla(0,84%,50%,0.7)" },
+        },
       },
       animation: {
         marquee: "marquee 35s linear infinite",
@@ -80,6 +89,7 @@ module.exports = {
         "marquee-down": "marqueeDown 28s linear infinite",
         shimmer: "shimmer 8s linear infinite",
         pulseGlow: "pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        livePulse: "livePulse 2s ease-in-out infinite",
       },
     },
   },

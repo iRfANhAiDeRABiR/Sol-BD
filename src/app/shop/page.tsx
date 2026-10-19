@@ -133,21 +133,28 @@ export default async function ShopPage(props: ShopPageProps) {
   const activeCategory = selectedCat !== 'all' ? categories.find((c) => c.slug === selectedCat) : null;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6 space-y-6">
+    <div className="max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6">
       {/* Header Banner */}
-      <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-700 dark:from-violet-950 dark:via-indigo-950 dark:to-slate-900 text-white shadow-xl relative overflow-hidden border border-violet-500/20">
+      <div
+        className="rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border"
+        style={{
+          background: 'linear-gradient(135deg, hsl(258,78%,55%) 0%, hsl(225,80%,50%) 50%, hsl(200,90%,45%) 100%)',
+          borderColor: 'hsla(258,78%,75%,0.25)',
+          boxShadow: '0 8px 32px hsla(258,78%,45%,0.25)',
+        }}
+      >
         {/* Ambient subtle glow decoration */}
-        <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-sky-400/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-sky-400/20 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 space-y-2 max-w-xl">
-          <span className="text-xs font-black uppercase tracking-wider text-amber-300 bg-black/25 backdrop-blur-sm border border-amber-300/30 px-3 py-1 rounded-full inline-block shadow-sm">
-            Official Store
+          <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 bg-black/25 backdrop-blur-sm border border-amber-300/30 px-3 py-1 rounded-full inline-block shadow-sm">
+            Verified Digital Store
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-sora tracking-tight text-white drop-shadow-sm">
             {activeCategory ? activeCategory.name : 'সকল ডিজিটাল সফটওয়্যার ও লাইসেন্স'}
           </h1>
-          <p className="text-xs sm:text-sm text-indigo-100 dark:text-slate-300 leading-relaxed font-medium">
+          <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
             {activeCategory?.description ||
               'জেনুইন উইন্ডোজ, মাইক্রোসফট অফিস, আইডিএম এবং অ্যান্টিভাইরাস লাইসেন্স কি সর্বনিম্ন মূল্যে তাৎক্ষণিক অটোমেটেড ডেলিভারিসহ।'}
           </p>
@@ -289,7 +296,7 @@ export default async function ShopPage(props: ShopPageProps) {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
             {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

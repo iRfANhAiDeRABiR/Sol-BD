@@ -1,6 +1,7 @@
 import React from 'react';
 import prisma from '@/lib/prisma';
 import HeroBanner from '@/components/home/HeroBanner';
+import LiveTicker from '@/components/home/LiveTicker';
 import FlashSale from '@/components/home/FlashSale';
 import CategorySection from '@/components/home/CategorySection';
 import ProductGrid from '@/components/home/ProductGrid';
@@ -53,6 +54,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       <HeroBanner />
+      <LiveTicker />
       <CategorySection categories={categories} />
       <FlashSale products={products} />
       <ProductGrid products={products} categories={categories} />

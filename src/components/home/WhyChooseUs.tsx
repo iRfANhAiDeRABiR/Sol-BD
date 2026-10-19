@@ -30,13 +30,23 @@ export default function WhyChooseUs() {
   ];
 
   return (
-    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-10">
+    <section className="max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6 py-10">
       <div className="text-center max-w-2xl mx-auto mb-8 space-y-2">
-        <span className="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/60 px-3 py-1 rounded-full">
+        <span className="text-[11px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/60 px-3 py-1 rounded-full font-sora">
           কেন SolutionsBD থেকে কিনবেন?
         </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          বাংলাদেশের সর্বাধিক নির্ভরযোগ্য ডিজিটাল সফটওয়্যার শপ
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-sora text-slate-900 dark:text-white tracking-tight">
+          বাংলাদেশের সর্বাধিক নির্ভরযোগ্য{' '}
+          <span
+            style={{
+              background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            ডিজিটাল সফটওয়্যার শপ
+          </span>
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
           আমরা নিশ্চিত করি সর্বোচ্চ গ্রাহক সন্তুষ্টি, নিরাপদ পেমেন্ট এবং তাৎক্ষণিক ডেলিভারি

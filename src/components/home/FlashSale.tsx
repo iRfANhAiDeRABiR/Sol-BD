@@ -36,21 +36,27 @@ export default function FlashSale({ products }: FlashSaleProps) {
   if (flashProducts.length === 0) return null;
 
   return (
-    <section className="max-w-[1440px] mx-auto px-3 sm:px-5 py-8">
+    <section className="max-w-[1800px] mx-auto px-2 sm:px-4 lg:px-6 py-6">
       {/* Header with Countdown Timer */}
-      <div className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-2xl p-4 sm:p-5 text-white shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div
+        className="rounded-2xl p-4 sm:p-5 text-white shadow-lg mb-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+        style={{
+          background: 'linear-gradient(135deg, hsl(0,80%,55%) 0%, hsl(25,95%,52%) 60%, hsl(42,96%,55%) 100%)',
+          boxShadow: '0 8px 30px hsla(0,80%,50%,0.25)',
+        }}
+      >
         <div className="flex items-center gap-3 text-center sm:text-left">
-          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
             <Flame className="w-7 h-7 text-yellow-200 fill-yellow-200 animate-bounce" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2 justify-center sm:justify-start">
+            <h2 className="text-xl sm:text-2xl font-black font-sora tracking-tight flex items-center gap-2 justify-center sm:justify-start">
               <span>ফ্ল্যাশ সেল অফার</span>
-              <span className="text-xs bg-white text-red-600 font-extrabold px-2 py-0.5 rounded-md uppercase">
+              <span className="text-xs bg-white text-red-600 font-extrabold px-2.5 py-0.5 rounded-full uppercase shadow-xs">
                 Up to 60% OFF
               </span>
             </h2>
-            <p className="text-xs text-orange-100 font-medium">
+            <p className="text-xs text-orange-100 font-medium mt-0.5">
               সীমিত সময়ের বিশেষ ছাড়ে অরিজিনাল সফটওয়্যার লাইসেন্স কিনুন
             </p>
           </div>
@@ -78,8 +84,8 @@ export default function FlashSale({ products }: FlashSaleProps) {
         </div>
       </div>
 
-      {/* Grid of Flash Sale Products */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Grid of Flash Sale Products - 2 cols on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {flashProducts.slice(0, 4).map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

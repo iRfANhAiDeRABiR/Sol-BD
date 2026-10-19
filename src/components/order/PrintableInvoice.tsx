@@ -25,18 +25,27 @@ export default function PrintableInvoice({ order }: PrintableInvoiceProps) {
       {/* 1. Header Section */}
       <div className="flex items-start justify-between pb-3 border-b-2 border-slate-800 print-avoid-break">
         {/* Brand & Merchant Info */}
-        <div>
-          <div className="flex items-baseline">
-            <span className="text-2xl font-black tracking-tight text-[#f59e0b]">Solutions</span>
-            <span className="text-2xl font-black tracking-tight text-[#2563eb] ml-1">BD</span>
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-full border border-blue-200 overflow-hidden bg-white flex-shrink-0">
+            <img
+              src="/logo.png"
+              alt="SolutionsBD Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <div className="text-[9px] font-black tracking-widest text-slate-500 uppercase mt-0.5">
-            DIGITAL SOFTWARE SHOP
-          </div>
-          <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
-            <p>Official Genuine Software & License Key Store • Dhaka, Bangladesh</p>
-            <p>Phone / WhatsApp: +880 1410-699879 • Email: info@techsolutions.bd</p>
-            <p>Website: https://solutionsbd.com</p>
+          <div>
+            <div className="flex items-baseline">
+              <span className="text-2xl font-black tracking-tight text-slate-950">Solutions</span>
+              <span className="text-2xl font-black tracking-tight text-[#0066ff] ml-1">BD</span>
+            </div>
+            <div className="text-[8.5px] font-black tracking-widest text-slate-500 uppercase mt-0.5">
+              YOUR TRUSTED SOFTWARE PARTNER
+            </div>
+            <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
+              <p>Official Genuine Software & License Key Store • Dhaka, Bangladesh</p>
+              <p>Phone / WhatsApp: +880 1410-699879 • Email: info@techsolutions.bd</p>
+              <p>Website: https://solutionsbd.com</p>
+            </div>
           </div>
         </div>
 

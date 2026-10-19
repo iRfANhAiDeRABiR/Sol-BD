@@ -47,20 +47,22 @@ export default function AdminLoginClient() {
 
       {/* Top Bar with Theme Switch */}
       <div className="w-full max-w-7xl mx-auto p-6 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-md shadow-violet-600/30 flex items-center justify-center">
-            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 flex items-center justify-center flex-shrink-0">
+            <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               <Image
-                src="/favicon.ico"
+                src="/logo.png"
                 alt="SolutionsBD Logo"
-                width={20}
-                height={20}
-                className="w-full h-full object-contain rounded-sm"
-                unoptimized
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
-          <span className="font-extrabold text-sm tracking-tight">SolutionsBD</span>
+          <span className="font-black text-sm tracking-tight flex items-baseline">
+            <span className="text-slate-900 dark:text-white">Solutions</span>
+            <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-0.5">BD</span>
+          </span>
         </div>
         <ThemeToggle />
       </div>

@@ -104,30 +104,29 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-3">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group select-none">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-md shadow-violet-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
-              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px] flex items-center justify-center p-1 overflow-hidden">
+            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
+              <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                 <Image
-                  src="/favicon.ico"
+                  src="/logo.png"
                   alt="SolutionsBD Logo"
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-contain rounded-md"
+                  width={44}
+                  height={44}
+                  className="w-full h-full object-cover"
                   priority
-                  unoptimized
                 />
               </div>
             </div>
             <div className="flex flex-col leading-tight">
-              <div className="text-xl font-extrabold tracking-tight flex items-baseline">
-                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
+              <div className="text-xl sm:text-[22px] font-black tracking-tight flex items-baseline">
+                <span className="text-slate-900 dark:text-white">
                   Solutions
                 </span>
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent ml-1">
+                <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
                   BD
                 </span>
               </div>
-              <span className="text-[9px] font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
-                Digital Software Shop
+              <span className="text-[8.5px] font-bold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase">
+                YOUR TRUSTED SOFTWARE PARTNER
               </span>
             </div>
           </Link>

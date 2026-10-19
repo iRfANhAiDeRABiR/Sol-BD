@@ -112,19 +112,29 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
     <div className="w-full max-w-md mx-auto">
       {/* Brand Header */}
       <div className="text-center mb-8">
-        <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group select-none">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-0.5 shadow-lg shadow-violet-500/25 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center p-1.5 overflow-hidden">
+        <Link href="/" className="inline-flex items-center gap-3 mb-4 group select-none">
+          <div className="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform flex items-center justify-center">
+            <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               <Image
-                src="/favicon.ico"
+                src="/logo.png"
                 alt="SolutionsBD Logo"
-                width={36}
-                height={36}
-                className="w-full h-full object-contain rounded-lg"
+                width={56}
+                height={56}
+                className="w-full h-full object-cover"
                 priority
-                unoptimized
               />
             </div>
+          </div>
+          <div className="text-left leading-tight">
+            <div className="text-2xl font-black tracking-tight flex items-baseline">
+              <span className="text-slate-900 dark:text-white">Solutions</span>
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
+                BD
+              </span>
+            </div>
+            <span className="text-[9px] font-bold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase block">
+              YOUR TRUSTED SOFTWARE PARTNER
+            </span>
           </div>
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">

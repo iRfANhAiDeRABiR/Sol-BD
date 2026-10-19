@@ -25,8 +25,8 @@ export default function PrintableInvoice({ order }: PrintableInvoiceProps) {
       {/* 1. Header Section */}
       <div className="flex items-start justify-between pb-3 border-b-2 border-slate-800 print-avoid-break">
         {/* Brand & Merchant Info */}
-        <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-full border border-blue-200 overflow-hidden bg-white flex-shrink-0">
+        <div className="flex items-center gap-3.5">
+          <div className="w-14 h-14 rounded-full border-2 border-blue-300 overflow-hidden bg-white flex-shrink-0 shadow-sm">
             <img
               src="/logo.png"
               alt="SolutionsBD Logo"
@@ -37,9 +37,6 @@ export default function PrintableInvoice({ order }: PrintableInvoiceProps) {
             <div className="flex items-baseline">
               <span className="text-2xl font-black tracking-tight text-slate-950">Solutions</span>
               <span className="text-2xl font-black tracking-tight text-[#0066ff] ml-1">BD</span>
-            </div>
-            <div className="text-[8.5px] font-black tracking-widest text-slate-500 uppercase mt-0.5">
-              YOUR TRUSTED SOFTWARE PARTNER
             </div>
             <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
               <p>Official Genuine Software & License Key Store • Dhaka, Bangladesh</p>

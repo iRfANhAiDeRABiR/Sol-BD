@@ -15,27 +15,22 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 pb-12 border-b border-slate-800/80">
           {/* Col 1 & 2: Brand Info */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5 group select-none">
-              <div className="relative w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 flex items-center justify-center flex-shrink-0">
+            <Link href="/" className="flex items-center gap-3.5 group select-none">
+              <div className="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-xl shadow-blue-500/25 flex items-center justify-center flex-shrink-0">
                 <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                   <Image
                     src="/logo.png"
                     alt="SolutionsBD Logo"
-                    width={40}
-                    height={40}
+                    width={56}
+                    height={56}
                     className="w-full h-full object-cover"
                   />
                 </div>
               </div>
-              <div className="flex flex-col leading-tight">
-                <div className="text-xl font-black tracking-tight flex items-baseline">
-                  <span className="text-white">Solutions</span>
-                  <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent ml-1 font-black">
-                    BD
-                  </span>
-                </div>
-                <span className="text-[8.5px] font-bold tracking-[0.16em] text-slate-400 uppercase">
-                  YOUR TRUSTED SOFTWARE PARTNER
+              <div className="text-2xl sm:text-[28px] font-black tracking-tight flex items-baseline">
+                <span className="text-white">Solutions</span>
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent ml-1 font-black">
+                  BD
                 </span>
               </div>
             </Link>

@@ -47,19 +47,19 @@ export default function AdminLoginClient() {
 
       {/* Top Bar with Theme Switch */}
       <div className="w-full max-w-7xl mx-auto p-6 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-8 h-8 rounded-full p-[1px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 flex items-center justify-center flex-shrink-0">
             <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="SolutionsBD Logo"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
               />
             </div>
           </div>
-          <span className="font-black text-sm tracking-tight flex items-baseline">
+          <span className="font-black text-base tracking-tight flex items-baseline">
             <span className="text-slate-900 dark:text-white">Solutions</span>
             <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-0.5">BD</span>
           </span>

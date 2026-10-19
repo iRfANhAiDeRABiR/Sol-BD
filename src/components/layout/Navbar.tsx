@@ -103,30 +103,25 @@ export default function Navbar() {
       <nav className="glass-nav rounded-2xl mx-auto w-full max-w-[1440px] px-3 sm:px-5 py-2.5 transition-all duration-300 pointer-events-auto">
         <div className="flex items-center justify-between gap-3">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group select-none">
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
+          <Link href="/" className="flex items-center gap-3 group select-none">
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/25 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
               <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                 <Image
                   src="/logo.png"
                   alt="SolutionsBD Logo"
-                  width={44}
-                  height={44}
+                  width={56}
+                  height={56}
                   className="w-full h-full object-cover"
                   priority
                 />
               </div>
             </div>
-            <div className="flex flex-col leading-tight">
-              <div className="text-xl sm:text-[22px] font-black tracking-tight flex items-baseline">
-                <span className="text-slate-900 dark:text-white">
-                  Solutions
-                </span>
-                <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
-                  BD
-                </span>
-              </div>
-              <span className="text-[8.5px] font-bold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase">
-                YOUR TRUSTED SOFTWARE PARTNER
+            <div className="text-2xl sm:text-[26px] font-black tracking-tight flex items-baseline">
+              <span className="text-slate-900 dark:text-white">
+                Solutions
+              </span>
+              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
+                BD
               </span>
             </div>
           </Link>

@@ -97,20 +97,20 @@ export default function AdminSidebar({
       {/* Top Header & Brand */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2 pt-2">
-          <Link href="/admin" className="flex items-center gap-2.5 group">
-            <div className="relative w-9 h-9 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
+          <Link href="/admin" className="flex items-center gap-3 group">
+            <div className="relative w-11 h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
               <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                 <Image
                   src="/logo.png"
                   alt="SolutionsBD Logo"
-                  width={36}
-                  height={36}
+                  width={44}
+                  height={44}
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
             <div>
-              <div className="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
+              <div className="text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1">
                 <span>Solutions</span>
                 <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent">BD</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">

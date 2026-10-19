@@ -112,28 +112,23 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
     <div className="w-full max-w-md mx-auto">
       {/* Brand Header */}
       <div className="text-center mb-8">
-        <Link href="/" className="inline-flex items-center gap-3 mb-4 group select-none">
-          <div className="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform flex items-center justify-center">
+        <Link href="/" className="inline-flex items-center gap-3.5 mb-5 group select-none">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full p-[2.5px] bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 shadow-xl shadow-blue-500/30 group-hover:scale-105 transition-transform flex items-center justify-center flex-shrink-0">
             <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="SolutionsBD Logo"
-                width={56}
-                height={56}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
                 priority
               />
             </div>
           </div>
-          <div className="text-left leading-tight">
-            <div className="text-2xl font-black tracking-tight flex items-baseline">
-              <span className="text-slate-900 dark:text-white">Solutions</span>
-              <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
-                BD
-              </span>
-            </div>
-            <span className="text-[9px] font-bold tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase block">
-              YOUR TRUSTED SOFTWARE PARTNER
+          <div className="text-2xl sm:text-3xl font-black tracking-tight flex items-baseline">
+            <span className="text-slate-900 dark:text-white">Solutions</span>
+            <span className="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 bg-clip-text text-transparent ml-1 font-black">
+              BD
             </span>
           </div>
         </Link>

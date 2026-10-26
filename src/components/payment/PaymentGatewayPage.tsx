@@ -12,6 +12,7 @@ import {
   PhoneCall,
   FileDown,
   MessageCircle,
+  Home,
 } from "lucide-react";
 import { BkashLogo, NagadLogo, RocketLogo } from "@/components/common/PaymentLogos";
 import styles from "./PaymentGatewayPage.module.css";
@@ -837,11 +838,49 @@ export default function PaymentGatewayPage({
                   <span>WhatsApp কনফার্মেশন (+8801410699879)</span>
                 </a>
 
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      sessionStorage.removeItem("sbd_submitted_order");
+                      localStorage.removeItem("sbd_submitted_order");
+                      sessionStorage.removeItem("sbd_pending_payment");
+                      sessionStorage.removeItem("techbd_pending_payment");
+                    } catch {}
+                    window.location.href = "/";
+                  }}
+                  className={styles.btnReturnHome}
+                  style={{
+                    background: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "13px 20px",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+                  }}
+                >
+                  <Home size={18} />
+                  <span>হোমে ফিরে যান (Return to Home)</span>
+                </button>
+
                 <Link
                   href={`/checkout?order=${encodeURIComponent(submittedOrder?.orderNumber || order.refId)}`}
                   className={styles.btnReturnHome}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
                 >
-                  Return to Checkout &amp; View Status
+                  <span>অর্ডার স্ট্যাটাস দেখুন (View Order Details) →</span>
                 </Link>
               </div>
             </div>

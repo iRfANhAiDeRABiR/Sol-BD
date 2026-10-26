@@ -16,6 +16,7 @@ import {
   Headphones,
   FileDown,
   MessageCircle,
+  Home,
 } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { useCartStore } from '@/lib/cart-store';
@@ -171,18 +172,123 @@ export default function CartPageClient() {
     setMounted(true);
 
     try {
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const orderParam = params?.get('order')?.trim();
+
+      if (!orderParam) {
+        // Normal visit to /cart or /checkout without ?order: show standard cart
+        setSubmittedOrder(null);
+        try {
+          sessionStorage.removeItem('sbd_submitted_order');
+          localStorage.removeItem('sbd_submitted_order');
+          sessionStorage.removeItem('sbd_pending_payment');
+        } catch {}
+        return;
+      }
+
+      // Order query parameter is present: show the confirmation
       const stored = sessionStorage.getItem('sbd_submitted_order') || localStorage.getItem('sbd_submitted_order');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed?.orderNumber || parsed?.id) {
+        if (parsed && (parsed.orderNumber === orderParam || parsed.id === orderParam)) {
           setSubmittedOrder(parsed);
-          setOrderVerificationStatus(parsed.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING');
+          setOrderVerificationStatus(
+            parsed.status === 'CONFIRMED' ? 'CONFIRMED' : parsed.status === 'INVALID' ? 'INVALID' : 'PENDING'
+          );
+          return;
         }
       }
+
+      // If not stored in session or ID differs, initialize placeholder and let live poller fetch
+      setSubmittedOrder({
+        id: orderParam,
+        orderNumber: orderParam,
+        total: 0,
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        paymentMethod: 'Mobile Banking',
+      });
     } catch {
       // ignore
     }
   }, []);
+
+  // Live real-time polling for submitted order status (updates dynamically when admin confirms via Telegram)
+  useEffect(() => {
+    const orderNumber = submittedOrder?.orderNumber || submittedOrder?.id;
+    if (!orderNumber) return;
+
+    let isCancelled = false;
+    let interval: NodeJS.Timeout | null = null;
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`/api/order/verify?ref=${encodeURIComponent(orderNumber)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isCancelled) return;
+
+        if (data.status) {
+          setOrderVerificationStatus(data.status);
+          setSubmittedOrder((prev) => ({
+            id: data.refId || prev?.id || orderNumber,
+            orderNumber: data.orderNumber || prev?.orderNumber || orderNumber,
+            total: typeof data.total === 'number' ? data.total : (prev?.total ?? 0),
+            customerName: data.customerName || prev?.customerName || '',
+            customerEmail: data.customerEmail || prev?.customerEmail || '',
+            customerPhone: data.customerPhone || prev?.customerPhone || '',
+            paymentMethod: data.paymentMethod || prev?.paymentMethod || 'Mobile Banking',
+            senderNumber: data.senderNumber ?? prev?.senderNumber,
+            transactionId: data.transactionId ?? prev?.transactionId,
+          }));
+
+          try {
+            const current = sessionStorage.getItem('sbd_submitted_order');
+            if (current) {
+              const updated = { ...JSON.parse(current), status: data.status };
+              sessionStorage.setItem('sbd_submitted_order', JSON.stringify(updated));
+            }
+          } catch {}
+        }
+      } catch {
+        // silent fallback
+      }
+    };
+
+    checkStatus();
+    interval = setInterval(checkStatus, 2500);
+
+    return () => {
+      isCancelled = true;
+      if (interval) clearInterval(interval);
+    };
+  }, [submittedOrder?.orderNumber, submittedOrder?.id]);
+
+  const clearSubmittedOrderSession = () => {
+    try {
+      sessionStorage.removeItem('sbd_submitted_order');
+      localStorage.removeItem('sbd_submitted_order');
+      sessionStorage.removeItem('sbd_pending_payment');
+      sessionStorage.removeItem('techbd_pending_payment');
+    } catch {}
+    setSubmittedOrder(null);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', '/cart');
+    }
+  };
+
+  const handleReturnHome = () => {
+    clearSubmittedOrderSession();
+    clearCart();
+    router.push('/');
+  };
+
+  const handleStartNewOrder = () => {
+    clearSubmittedOrderSession();
+    clearCart();
+    router.push('/shop');
+  };
 
   // Compute subtotal and total
   const activeSubtotal = useMemo(() => {
@@ -466,6 +572,27 @@ export default function CartPageClient() {
 
             {/* Bottom Actions */}
             <div className={styles.confirmationActions}>
+              <button
+                type="button"
+                onClick={handleReturnHome}
+                className={styles.continueButton}
+                style={{
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: 750,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                }}
+              >
+                <Home size={16} />
+                <span>হোমে ফিরে যান (Return to Home)</span>
+              </button>
+
               <a
                 href={whatsappUrl}
                 target="_blank"
@@ -491,9 +618,9 @@ export default function CartPageClient() {
                 href="/downloads"
                 className={styles.continueButton}
                 style={{
-                  background: '#2563eb',
-                  color: '#ffffff',
-                  border: 'none',
+                  background: '#1e293b',
+                  color: '#38bdf8',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -508,21 +635,22 @@ export default function CartPageClient() {
 
               <button
                 type="button"
-                onClick={() => {
-                  try {
-                    sessionStorage.removeItem('sbd_submitted_order');
-                    localStorage.removeItem('sbd_submitted_order');
-                    sessionStorage.removeItem('sbd_pending_payment');
-                  } catch {}
-                  setSubmittedOrder(null);
-                  if (typeof window !== 'undefined') {
-                    window.history.replaceState({}, '', '/cart');
-                  }
-                }}
+                onClick={handleStartNewOrder}
                 className={styles.continueButton}
-                style={{ cursor: 'pointer', background: 'none', border: '1px solid rgba(148, 163, 184, 0.4)' }}
+                style={{
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: '1px solid rgba(148, 163, 184, 0.4)',
+                  color: '#64748b',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: 650,
+                }}
               >
-                + Start New Order
+                <ShoppingBag size={16} />
+                <span>+ Start New Order (নতুন অর্ডার)</span>
               </button>
             </div>
           </div>

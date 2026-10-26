@@ -34,15 +34,15 @@ export default function NewsletterSection() {
 
   return (
     <section className="w-full max-w-[1440px] mx-auto px-3 sm:px-5 py-6 sm:py-10">
-      <div className="rounded-[28px] sm:rounded-[36px] bg-slate-50 dark:bg-[#0c1022] border border-slate-200 dark:border-indigo-500/20 shadow-xl dark:shadow-2xl relative overflow-hidden py-12 sm:py-16 md:py-20 px-6 sm:px-12 text-center transition-colors duration-300">
+      <div className="rounded-[28px] sm:rounded-[36px] bg-slate-50 dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-lg relative overflow-hidden py-12 sm:py-16 md:py-20 px-6 sm:px-12 text-center transition-colors duration-300">
         {/* Subtle Ambient Radial Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-36 bg-gradient-to-b from-indigo-500/10 dark:from-indigo-500/15 via-violet-500/5 dark:via-violet-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-36 bg-gradient-to-b from-blue-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl mx-auto space-y-3">
           {/* Title */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
             Get{' '}
-            <span className="bg-gradient-to-r from-[#5974f2] via-[#6a66f7] to-[#1fd1c7] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Exclusive Deals
             </span>
           </h2>
@@ -65,13 +65,13 @@ export default function NewsletterSection() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
                 disabled={loading}
-                className="w-full px-5 py-3.5 rounded-full bg-white dark:bg-[#151a30] border border-slate-200 dark:border-slate-700/60 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-sm dark:shadow-inner"
+                className="w-full px-5 py-3.5 rounded-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-xs"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-full text-sm font-bold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-[#506ef2] to-[#1ecab8] hover:from-[#4362ec] hover:to-[#17bda9] shadow-lg shadow-teal-500/25 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 flex-shrink-0"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-full text-sm font-semibold text-white flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-colors disabled:opacity-70 flex-shrink-0"
             >
               <span>{loading ? 'Subscribing...' : 'Subscribe'}</span>
               <ArrowRight className="w-4 h-4" />

@@ -80,14 +80,15 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout/payment')) return null;
 
   const totalItems = totalCount || zustandTotal;
 
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'All Products', href: '/shop' },
-    { name: 'Free Tools', href: '/tools', badge: 'Free' },
+    { name: 'Tools', href: '/tools', badge: 'Free' },
+    { name: 'Downloads', href: '/downloads' },
     { name: 'About', href: '/about' },
   ];
 
@@ -130,20 +131,20 @@ export default function Navbar() {
       >
         <div className="px-3 sm:px-6">
           <div className="flex items-center justify-between h-[68px] gap-2 lg:gap-4">
-            {/* Brand Logo - Shahed Store Multi-Gradient Border Ring */}
+            {/* Brand Logo - Sleek Modern Tech Accent */}
             <Link href="/" className="flex items-center flex-shrink-0 group select-none">
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0 flex items-center justify-center">
                   <div
-                    className="absolute inset-[-2px] rounded-2xl pointer-events-none"
+                    className="absolute inset-[-1.5px] rounded-2xl pointer-events-none"
                     style={{
-                      background: 'linear-gradient(135deg, hsl(42,96%,58%), hsl(25,100%,55%), hsl(258,78%,60%), hsl(210,90%,60%))',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
                       borderRadius: '18px',
                       padding: '1.5px',
                     }}
                   />
                   <div
-                    className="h-12 w-12 rounded-2xl flex items-center justify-center relative overflow-hidden bg-white dark:bg-slate-900 border border-violet-500/20 shadow-md group-hover:scale-105 transition-transform"
+                    className="h-12 w-12 rounded-2xl flex items-center justify-center relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 shadow-sm group-hover:scale-105 transition-transform"
                   >
                     <Image
                       src="/logo.png"
@@ -162,7 +163,7 @@ export default function Navbar() {
                     <span
                       className="ml-[0.25em]"
                       style={{
-                        background: 'linear-gradient(135deg, hsl(210,90%,52%) 0%, hsl(243,80%,55%) 100%)',
+                        backgroundImage: 'linear-gradient(135deg, #2563eb 0%, #38bdf8 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
@@ -174,32 +175,28 @@ export default function Navbar() {
                   <div className="flex items-center gap-1.5 mt-[4px]">
                     <div
                       className="h-[1.5px] w-4 rounded-full"
-                      style={{ background: 'linear-gradient(90deg, hsl(20,100%,58%), transparent)' }}
+                      style={{ background: 'linear-gradient(90deg, #2563eb, transparent)' }}
                     />
                     <span className="text-[9px] font-semibold tracking-[0.14em] uppercase font-fira text-slate-500 dark:text-slate-400">
                       solutionsbd.com
                     </span>
                     <div
                       className="h-[1.5px] w-4 rounded-full"
-                      style={{ background: 'linear-gradient(90deg, transparent, hsl(222,90%,60%))' }}
+                      style={{ background: 'linear-gradient(90deg, transparent, #38bdf8)' }}
                     />
                   </div>
                 </div>
               </div>
             </Link>
 
-            {/* Desktop Ctrl+K Search Bar */}
+            {/* Desktop Search Bar */}
             <form
               action="/shop"
               method="GET"
               onSubmit={handleSearchSubmit}
-              className="hidden lg:flex flex-1 min-w-0 max-w-[440px] items-center gap-2 rounded-xl border px-3.5 py-2 text-left transition-all group overflow-hidden focus-within:border-violet-500/60 focus-within:ring-2 focus-within:ring-violet-500/20"
-              style={{
-                borderColor: 'hsla(258,78%,60%,0.22)',
-                background: 'hsla(258,78%,55%,0.05)',
-              }}
+              className="hidden lg:flex flex-1 min-w-0 max-w-[440px] items-center gap-2 rounded-xl border px-3.5 py-2 text-left transition-all group overflow-hidden border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20"
             >
-              <Search className="w-4 h-4 text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors flex-shrink-0" />
+              <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex-shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -207,37 +204,25 @@ export default function Navbar() {
                 placeholder="Search products, Windows, Office..."
                 className="text-sm bg-transparent outline-none flex-1 min-w-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium"
               />
-              <kbd className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-slate-300 dark:border-slate-700 text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-                Ctrl K
-              </kbd>
             </form>
 
             {/* Nav Links */}
-            <div className="hidden lg:flex items-center gap-1.5 min-w-0 flex-shrink">
+            <div className="hidden lg:flex items-center gap-1 min-w-0 flex-shrink">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 font-bold text-xs lg:text-sm whitespace-nowrap hover:scale-105"
-                    style={{
-                      background: isActive
-                        ? 'linear-gradient(135deg, hsla(258,78%,55%,0.15), hsla(200,90%,45%,0.10))'
-                        : 'hsla(0,0%,100%,0.60)',
-                      backdropFilter: 'blur(10px)',
-                      color: isActive ? 'hsl(258,78%,50%)' : 'inherit',
-                      border: isActive
-                        ? '1px solid hsla(258,78%,65%,0.4)'
-                        : '1px solid hsla(258,78%,75%,0.15)',
-                      boxShadow: isActive
-                        ? '0 2px 10px hsla(258,78%,55%,0.15)'
-                        : '0 1px 4px rgba(0,0,0,0.03)',
-                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 font-semibold text-xs lg:text-sm whitespace-nowrap ${
+                      isActive
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50/90 dark:bg-blue-950/40 border border-blue-500/20 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60 border border-transparent'
+                    }`}
                   >
                     <span>{link.name}</span>
                     {link.badge && (
-                      <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 shadow-xs">
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
                         {link.badge}
                       </span>
                     )}
@@ -256,22 +241,17 @@ export default function Navbar() {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border"
-                    style={{
-                      color: 'hsl(258,78%,50%)',
-                      borderColor: 'hsla(258,78%,55%,0.30)',
-                      background: 'hsla(258,78%,55%,0.08)',
-                    }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700"
                   >
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
                       {(customer.name || customer.email)[0].toUpperCase()}
                     </div>
                     <span className="hidden sm:inline max-w-[90px] truncate">{customer.name || 'Account'}</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                         <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {customer.name || 'Customer'}
@@ -282,25 +262,25 @@ export default function Navbar() {
                       <Link
                         href="/account"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40"
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-blue-600 dark:hover:text-blue-400"
                       >
-                        <User className="w-4 h-4 text-violet-600" />
+                        <User className="w-4 h-4 text-blue-600" />
                         <span>My Account</span>
                       </Link>
 
                       <Link
                         href="/account"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40"
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-blue-600 dark:hover:text-blue-400"
                       >
-                        <ShoppingBag className="w-4 h-4 text-indigo-600" />
+                        <ShoppingBag className="w-4 h-4 text-blue-600" />
                         <span>My Orders</span>
                       </Link>
 
                       <Link
                         href="/account"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-violet-950/40"
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-blue-600 dark:hover:text-blue-400"
                       >
                         <Key className="w-4 h-4 text-amber-500" />
                         <span>Licenses Vault</span>
@@ -310,7 +290,7 @@ export default function Navbar() {
 
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left"
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>
@@ -321,33 +301,23 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border hover:scale-105"
-                  style={{
-                    color: 'hsl(258,78%,50%)',
-                    borderColor: 'hsla(258,78%,55%,0.30)',
-                    background: 'hsla(258,78%,55%,0.08)',
-                  }}
+                  className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/30"
                 >
                   <User className="w-4 h-4" />
                   <span>Login</span>
                 </Link>
               )}
 
-              {/* Shopping Cart Pill Button - Shahed Store Signature Gradient */}
+              {/* Shopping Cart Pill Button */}
               <button
                 onClick={toggleCart}
                 aria-label="Open cart"
-                className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45% his))',
-                  backgroundImage: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
-                  boxShadow: '0 4px 16px hsla(258,78%,55%,0.35)',
-                }}
+                className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm shadow-blue-500/20 active:scale-[0.98]"
               >
                 <ShoppingCart className="w-4 h-4" />
                 <span className="hidden sm:inline">Cart</span>
                 {mounted && totalItems > 0 && (
-                  <span className="bg-amber-400 text-slate-900 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center -ml-0.5 shadow-md">
+                  <span className="bg-white text-blue-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center -ml-0.5 shadow-sm">
                     {totalItems}
                   </span>
                 )}
@@ -356,7 +326,7 @@ export default function Navbar() {
               {/* Mobile Hamburger Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2.5 rounded-xl transition-colors text-slate-700 dark:text-slate-300 hover:bg-violet-500/10"
+                className="lg:hidden p-2.5 rounded-xl transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 aria-label="Open navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -365,27 +335,21 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Expanded Drawer - Shahed Store Style */}
+        {/* Mobile Expanded Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden overflow-hidden border-t px-3 py-4 border-slate-200 dark:border-slate-800">
+          <div className="lg:hidden overflow-hidden border-t px-3 py-4 border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
             {/* Welcome Account Card */}
-            <div
-              className="w-full rounded-2xl p-4 mb-3 relative overflow-hidden text-white"
-              style={{
-                background: 'linear-gradient(135deg, hsl(258,78%,55%) 0%, hsl(225,80%,52%) 45%, hsl(200,90%,50%) 100%)',
-                boxShadow: '0 12px 30px -10px hsla(258,78%,45%,0.45)',
-              }}
-            >
+            <div className="w-full rounded-2xl p-4 mb-3 relative overflow-hidden text-white bg-gradient-to-br from-slate-900 via-slate-850 to-blue-950 border border-slate-850 shadow-md">
               <div className="relative flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/40">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-blue-600/20 border border-blue-400/30 text-blue-300">
+                  <User className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/80">Welcome 👋</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-300">Welcome</p>
                   <p className="text-sm font-bold truncate">
-                    {customer ? customer.name : 'Sign in to continue'}
+                    {customer ? customer.name : 'Sign in to your account'}
                   </p>
-                  <p className="text-[11px] text-white/85 truncate">
+                  <p className="text-[11px] text-slate-300 truncate">
                     {customer ? customer.email : 'Track orders & download license keys'}
                   </p>
                 </div>
@@ -393,7 +357,7 @@ export default function Navbar() {
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-violet-700 shadow hover:scale-105 active:scale-95 transition-all"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm hover:bg-blue-500 transition-colors"
                   >
                     Login
                   </Link>
@@ -406,45 +370,45 @@ export default function Navbar() {
               <Link
                 href="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs hover:scale-105 transition-transform"
+                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500/30 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-tr from-cyan-500 to-blue-500 text-white">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600 dark:text-blue-400">
                   <Package className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Orders</span>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Orders</span>
               </Link>
 
               <Link
                 href="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs hover:scale-105 transition-transform"
+                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500/30 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-600 dark:text-amber-400">
                   <Key className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Keys</span>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Keys</span>
               </Link>
 
               <Link
                 href="/tools"
                 onClick={() => setMobileMenuOpen(false)}
-                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs hover:scale-105 transition-transform"
+                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500/30 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-tr from-emerald-500 to-teal-500 text-white">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <Wrench className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Tools</span>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Tools</span>
               </Link>
 
               <Link
                 href="/shop"
                 onClick={() => setMobileMenuOpen(false)}
-                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs hover:scale-105 transition-transform"
+                className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-blue-500/30 transition-all"
               >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-tr from-rose-500 to-pink-500 text-white">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                   <Flame className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Deals</span>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Deals</span>
               </Link>
             </div>
 
@@ -456,14 +420,14 @@ export default function Navbar() {
                 setMobileMenuOpen(false);
                 handleSearchSubmit(e);
               }}
-              className="flex items-center gap-2.5 bg-violet-500/10 px-3.5 py-2.5 rounded-xl border border-violet-500/20 mb-3"
+              className="flex items-center gap-2.5 bg-slate-100 dark:bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 mb-3 focus-within:border-blue-500"
             >
-              <Search className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+              <Search className="w-4 h-4 text-slate-400 shrink-0" />
               <input
                 type="text"
                 name="q"
                 placeholder="Search products..."
-                className="bg-transparent text-sm w-full outline-none font-medium text-slate-900 dark:text-white"
+                className="bg-transparent text-sm w-full outline-none font-medium text-slate-900 dark:text-white placeholder:text-slate-400"
               />
             </form>
 
@@ -474,11 +438,11 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded-xl text-sm font-semibold hover:bg-violet-500/10 flex items-center justify-between text-slate-800 dark:text-slate-200"
+                  className="px-3 py-2 rounded-xl text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 flex items-center justify-between text-slate-800 dark:text-slate-200"
                 >
                   <span>{link.name}</span>
                   {link.badge && (
-                    <span className="bg-amber-400 text-slate-950 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-md font-bold">
                       {link.badge}
                     </span>
                   )}

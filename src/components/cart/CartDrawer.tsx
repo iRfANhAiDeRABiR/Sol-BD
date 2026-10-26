@@ -125,11 +125,11 @@ export default function CartDrawer() {
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
         <div className="w-screen max-w-md bg-white dark:bg-[#0b1121] shadow-2xl flex flex-col border-l border-slate-200/80 dark:border-white/[0.08]">
           {/* Header */}
-          <div className="p-4 border-b border-slate-100 dark:border-white/[0.08] flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/80">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/80">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              <ShoppingBag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <h2 className="font-bold text-slate-800 dark:text-white text-base">Your Cart</h2>
-              <span className="bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 text-xs px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs px-2 py-0.5 rounded-full font-bold">
                 {totalCount} {totalCount === 1 ? 'item' : 'items'}
               </span>
             </div>
@@ -217,10 +217,10 @@ export default function CartDrawer() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                      <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] rounded-lg px-1.5 py-0.5 shadow-sm">
+                      <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-lg px-1.5 py-0.5 shadow-xs">
                         <button
                           onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                          className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
+                          className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 p-0.5"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -229,7 +229,7 @@ export default function CartDrawer() {
                         </span>
                         <button
                           onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                          className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 p-0.5"
+                          className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 p-0.5"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -243,7 +243,7 @@ export default function CartDrawer() {
 
           {/* Footer & Checkout Area */}
           {activeItems.length > 0 && (
-            <div className="p-4 border-t border-slate-100 dark:border-white/[0.08] bg-slate-50/60 dark:bg-slate-900/60 space-y-3">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 space-y-3">
               {/* Coupon Form */}
               {couponCode ? (
                 <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 p-2.5 rounded-xl text-xs">
@@ -265,11 +265,11 @@ export default function CartDrawer() {
                     placeholder="Enter promo code"
                     value={inputCoupon}
                     onChange={(e) => setInputCoupon(e.target.value)}
-                    className="flex-1 text-xs border border-slate-200 dark:border-white/[0.08] rounded-xl px-3 py-2 outline-none focus:border-violet-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-white uppercase font-semibold"
+                    className="flex-1 text-xs border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 outline-none focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-white uppercase font-semibold"
                   />
                   <button
                     type="submit"
-                    className="bg-slate-800 hover:bg-slate-900 dark:bg-violet-600 dark:hover:bg-violet-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors shadow-xs"
                   >
                     Apply
                   </button>
@@ -288,9 +288,9 @@ export default function CartDrawer() {
                     <span>-{formatPrice(discountAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm font-extrabold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-white/[0.08]">
+                <div className="flex justify-between text-sm font-bold text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-800">
                   <span>Total Payable</span>
-                  <span className="text-base text-violet-700 dark:text-violet-400">{formatPrice(total)}</span>
+                  <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">{formatPrice(total)}</span>
                 </div>
               </div>
 
@@ -298,7 +298,7 @@ export default function CartDrawer() {
               <Link
                 href="/checkout"
                 onClick={closeCart}
-                className="w-full brand-gradient-btn text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25 transition-transform active:scale-[0.99]"
+                className="w-full brand-gradient-btn text-white py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.99]"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />

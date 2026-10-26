@@ -48,104 +48,104 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
 
-    /* Solutions BD / Shahed Store design tokens */
-    --brand-h: 258;
-    --brand-s: 78%;
-    --brand-l: 55%;
-    --accent-h: 42;
-    --accent-s: 96%;
-    --accent-l: 58%;
-    --brand2-h: 200;
-    --brand2-s: 90%;
-    --brand2-l: 45%;
-    --brand3-h: 330;
-    --brand3-s: 85%;
-    --brand3-l: 55%;
-    --brand4-h: 162;
-    --brand4-s: 72%;
-    --brand4-l: 38%;
+    /* Solutions BD refined modern design tokens */
+    --brand-h: 224;
+    --brand-s: 76%;
+    --brand-l: 52%;
+    --accent-h: 215;
+    --accent-s: 90%;
+    --accent-l: 50%;
+    --brand2-h: 199;
+    --brand2-s: 88%;
+    --brand2-l: 48%;
+    --brand3-h: 245;
+    --brand3-s: 75%;
+    --brand3-l: 58%;
+    --brand4-h: 155;
+    --brand4-s: 70%;
+    --brand4-l: 40%;
 
-    --neon-gold: hsl(var(--accent-h), var(--accent-s), 50%);
-    --neon-violet: hsl(var(--brand-h), var(--brand-s), var(--brand-l));
-    --neon-cyan: hsl(var(--brand2-h), var(--brand2-s), var(--brand2-l));
-    --neon-emerald: hsl(var(--brand4-h), var(--brand4-s), var(--brand4-l));
+    --neon-gold: hsl(38, 92%, 50%);
+    --neon-violet: hsl(224, 76%, 52%);
+    --neon-cyan: hsl(199, 88%, 48%);
+    --neon-emerald: hsl(155, 70%, 40%);
 
-    --glow-gold: 0 4px 20px hsla(var(--accent-h), var(--accent-s), 50%, 0.3), 0 1px 4px hsla(var(--accent-h), var(--accent-s), 50%, 0.15);
-    --glow-violet: 0 4px 20px hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.25), 0 1px 4px hsla(var(--brand-h), var(--brand-s), var(--brand-l), 0.12);
-    --glow-cyan: 0 4px 20px hsla(var(--brand2-h), var(--brand2-s), var(--brand2-l), 0.25), 0 1px 4px hsla(var(--brand2-h), var(--brand2-s), var(--brand2-l), 0.12);
+    --glow-gold: 0 4px 16px rgba(245, 158, 11, 0.18);
+    --glow-violet: 0 4px 16px rgba(37, 99, 235, 0.18);
+    --glow-cyan: 0 4px 16px rgba(2, 132, 199, 0.18);
 
-    --glass-bg: rgba(255, 255, 255, 0.85);
-    --glass-border: hsla(var(--brand-h), var(--brand-s), 75%, 0.22);
-    --glass-shadow: 0 4px 24px rgba(20, 25, 41, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(226, 232, 240, 0.85);
+    --glass-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
     /* SolutionsBD standard surface & text tokens (Light) */
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
-    --bg-glass: rgba(255, 255, 255, 0.7);
-    --bg-glass-hover: rgba(255, 255, 255, 0.9);
-    --border-color: rgba(0, 0, 0, 0.08);
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --bg-glass-hover: #ffffff;
+    --border-color: rgba(226, 232, 240, 0.8);
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-muted: #94a3b8;
-    --accent-primary: #7c3aed;
+    --accent-primary: #2563eb;
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
+    --background: oklch(0.13 0.015 250);
     --foreground: oklch(0.985 0 0);
 
-    --card: oklch(0.205 0 0);
+    --card: oklch(0.18 0.015 250);
     --card-foreground: oklch(0.985 0 0);
 
     --primary: oklch(0.922 0 0);
     --primary-foreground: oklch(0.205 0 0);
-    --primary-hover: 250 84% 66%;
+    --primary-hover: 224 76% 62%;
 
-    --secondary: oklch(0.269 0 0);
+    --secondary: oklch(0.22 0.015 250);
     --secondary-foreground: oklch(0.985 0 0);
 
-    --muted: oklch(0.269 0 0);
+    --muted: oklch(0.22 0.015 250);
     --muted-foreground: oklch(0.708 0 0);
 
-    --accent: oklch(0.269 0 0);
+    --accent: oklch(0.22 0.015 250);
     --accent-foreground: oklch(0.985 0 0);
 
     --destructive: oklch(0.704 0.191 22.216);
     --destructive-foreground: 210 20% 98%;
 
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.12);
     --ring: oklch(0.556 0 0);
-    --popover: oklch(0.205 0 0);
+    --popover: oklch(0.18 0.015 250);
     --popover-foreground: oklch(0.985 0 0);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
+    --sidebar: oklch(0.16 0.015 250);
     --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary: oklch(0.55 0.22 250);
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent: oklch(0.22 0.015 250);
     --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-border: rgba(255, 255, 255, 0.08);
     --sidebar-ring: oklch(0.556 0 0);
 
-    --glass-bg: rgba(15, 23, 42, 0.78);
-    --glass-border: hsla(var(--brand-h), var(--brand-s), 70%, 0.22);
-    --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(11, 15, 25, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
     /* SolutionsBD standard surface & text tokens (Dark) */
     --bg-card: rgba(15, 23, 42, 0.85);
     --bg-card-hover: rgba(24, 34, 58, 0.95);
-    --bg-glass: rgba(15, 23, 42, 0.6);
-    --bg-glass-hover: rgba(30, 41, 59, 0.65);
+    --bg-glass: rgba(15, 23, 42, 0.65);
+    --bg-glass-hover: rgba(30, 41, 59, 0.75);
     --border-color: rgba(255, 255, 255, 0.08);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --accent-primary: #a78bfa;
+    --accent-primary: #38bdf8;
   }
   .theme {
     --font-heading: var(--font-sans);
@@ -164,66 +164,73 @@
 
 /* Glassmorphism utility classes */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(121, 73, 233, 0.15);
-  box-shadow: 0 8px 32px -8px rgba(79, 25, 204, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .dark .glass-nav {
-  background: rgba(11, 17, 33, 0.88);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: rgba(11, 15, 25, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(121, 73, 233, 0.12);
-  box-shadow: 0 4px 20px -2px rgba(86, 61, 143, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
 }
 
 .dark .glass-card {
   background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.4);
 }
 
 /* Storefront glass and dark mode utilities */
 .dark body {
-  background-color: #090e1a;
+  background-color: #0b0f19;
   color: #f1f5f9;
 }
 
 /* Gradient text helpers */
 .gradient-text {
-  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 50%, #0ea5e9 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #f8fafc 0%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-amber {
-  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .brand-gradient-btn {
-  background: linear-gradient(135deg, #6833e6 0%, #2563eb 50%, #0d96e6 100%);
-  box-shadow: 0 4px 18px rgba(104, 51, 230, 0.35);
-  transition: all 0.25s ease;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.22);
+  transition: all 0.2s ease;
 }
 
 .dark .brand-gradient-btn {
-  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 50%, #06b6d4 100%);
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.45);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.32);
 }
 
 .brand-gradient-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(104, 51, 230, 0.45);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.32);
+  filter: brightness(1.05);
 }
 
 .brand-gradient-btn:active {

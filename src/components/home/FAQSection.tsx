@@ -36,7 +36,7 @@ export default function FAQSection() {
   return (
     <section id="faq-section" className="max-w-4xl mx-auto px-3 sm:px-5 py-12">
       <div className="text-center mb-8 space-y-2">
-        <span className="text-xs font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/60 px-3 py-1 rounded-full inline-flex items-center gap-1">
+        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/40 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
           <HelpCircle className="w-3.5 h-3.5" />
           সচরাচর জিজ্ঞাসিত প্রশ্ন (FAQ)
         </span>
@@ -54,21 +54,21 @@ export default function FAQSection() {
           return (
             <div
               key={idx}
-              className="glass-card rounded-2xl border border-slate-200/80 dark:border-white/[0.08] overflow-hidden bg-white/95 dark:bg-[#0f172a]/95 transition-all"
+              className="rounded-2xl border border-slate-200/90 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-xs transition-all"
             >
               <button
                 onClick={() => toggle(idx)}
-                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-800 dark:text-slate-200 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
                 <span>{faq.q}</span>
                 <ChevronDown
                   className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 text-violet-600 dark:text-violet-400' : ''
+                    isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''
                   }`}
                 />
               </button>
               {isOpen && (
-                <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-white/[0.05]">
+                <div className="px-4 sm:px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800">
                   {faq.a}
                 </div>
               )}

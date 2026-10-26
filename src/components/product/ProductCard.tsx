@@ -111,10 +111,9 @@ export function ProductCard({
   return (
     <div
       onClick={() => router.push(`/product/${slug}`)}
-      className="group rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between border bg-white dark:bg-slate-900/90 hover:shadow-xl hover:border-violet-500/40 relative"
+      className="group rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between border bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-blue-500/40 dark:hover:border-blue-500/40 relative hover:shadow-md"
       style={{
-        borderColor: 'hsl(var(--border))',
-        boxShadow: '0 2px 14px hsla(258,78%,55%,0.06)',
+        boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
       }}
     >
       {/* Product Image Area */}
@@ -131,7 +130,7 @@ export function ProductCard({
         <button
           onClick={toggleWishlist}
           title={isWishlisted ? 'Remove Wishlist' : 'Add Wishlist'}
-          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/60 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors shadow-sm"
+          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-500 hover:text-rose-500 transition-colors shadow-xs"
         >
           <Heart
             className={`w-4 h-4 transition-transform active:scale-125 ${
@@ -144,23 +143,13 @@ export function ProductCard({
         {outOfStock ? (
           <>
             <div className="absolute inset-0 bg-slate-950/60 pointer-events-none" />
-            <span
-              className="absolute top-2.5 left-2.5 text-[10px] font-black tracking-wider text-white px-2.5 py-1 rounded-full shadow-md"
-              style={{
-                background: 'linear-gradient(135deg, hsl(0,80%,55%), hsl(15,90%,55%))',
-              }}
-            >
+            <span className="absolute top-2.5 left-2.5 text-[10px] font-bold tracking-wider text-white px-2.5 py-0.5 rounded-full bg-rose-600 shadow-sm">
               STOCK OUT
             </span>
           </>
         ) : (
           discountPercent && (
-            <span
-              className="absolute top-2.5 left-2.5 text-[10.5px] font-bold text-white px-2.5 py-0.5 rounded-full shadow-md"
-              style={{
-                background: 'hsl(32, 100%, 50%)',
-              }}
-            >
+            <span className="absolute top-2.5 left-2.5 text-[10.5px] font-bold text-white px-2.5 py-0.5 rounded-full bg-amber-500 shadow-sm">
               -{discountPercent}%
             </span>
           )
@@ -168,18 +157,13 @@ export function ProductCard({
 
         {/* Feature / Flash Badge */}
         {!outOfStock && badge && (
-          <span
-            className="absolute bottom-2.5 right-2.5 text-[9.5px] font-bold text-white px-2.5 py-0.5 rounded-full shadow-md"
-            style={{
-              background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
-            }}
-          >
+          <span className="absolute bottom-2.5 right-2.5 text-[9.5px] font-semibold text-white px-2.5 py-0.5 rounded-full bg-blue-600 shadow-sm">
             {badge}
           </span>
         )}
 
         {/* Instant Delivery Pill */}
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 text-[9.5px] font-bold text-white bg-slate-950/75 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 text-[9.5px] font-semibold text-slate-200 bg-slate-900/85 backdrop-blur-md px-2 py-0.5 rounded-full border border-slate-700/60">
           <Zap className="w-2.5 h-2.5 text-amber-400" />
           <span>Instant Key</span>
         </div>
@@ -189,14 +173,14 @@ export function ProductCard({
       <div className="p-3.5 flex-1 flex flex-col justify-between gap-3">
         <div className="space-y-1">
           {product?.brand && (
-            <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 block font-sora">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block">
               {product.brand}
             </span>
           )}
           <Link
             href={`/product/${slug}`}
             onClick={(e) => e.stopPropagation()}
-            className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors"
+            className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
           >
             {name}
           </Link>
@@ -206,7 +190,7 @@ export function ProductCard({
         <div className="space-y-2.5 pt-1">
           <div className="flex items-baseline justify-between gap-2">
             <div>
-              <div className="font-sora font-black text-base sm:text-lg text-foreground">
+              <div className="font-sora font-bold text-base sm:text-lg text-foreground">
                 {formatPrice(price)}
               </div>
               {originalPrice && originalPrice > price && (
@@ -216,7 +200,7 @@ export function ProductCard({
               )}
             </div>
 
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+            <div className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
               <ShieldCheck className="w-3 h-3" />
               <span>Genuine</span>
             </div>
@@ -226,10 +210,10 @@ export function ProductCard({
             <button
               onClick={handleQuickAdd}
               disabled={outOfStock}
-              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all active:scale-95 border ${
+              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold transition-all active:scale-95 border ${
                 added
                   ? 'bg-emerald-600 text-white border-emerald-600'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-slate-800 dark:text-slate-200 border-slate-200/60 dark:border-white/[0.08]'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700/80'
               }`}
             >
               {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingCart className="w-3.5 h-3.5" />}
@@ -239,11 +223,7 @@ export function ProductCard({
             <button
               onClick={handleBuyNow}
               disabled={outOfStock}
-              className="text-white py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-md disabled:opacity-50 hover:brightness-110"
-              style={{
-                background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
-                boxShadow: '0 2px 10px hsla(258,78%,55%,0.25)',
-              }}
+              className="text-white py-2 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-sm disabled:opacity-50 bg-blue-600 hover:bg-blue-700"
             >
               <Zap className="w-3 h-3" />
               <span>Buy Now</span>

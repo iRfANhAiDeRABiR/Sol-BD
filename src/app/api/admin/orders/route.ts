@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/admin-auth';
+import { processTelegramOrderAction } from '@/lib/orderVerificationService';
 
 export async function GET() {
   try {
@@ -67,84 +68,47 @@ export async function PATCH(request: Request) {
     }
 
     if (action === 'APPROVE') {
-      // Find order and items
       const order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { items: true },
       });
 
       if (!order) {
         return NextResponse.json({ error: 'Order not found' }, { status: 404 });
       }
 
-      // Allocate keys
-      const allocatedKeysList: Array<{ variantName: string; keyCode: string }> = [];
-
-      await prisma.$transaction(async (tx) => {
-        for (const item of order.items) {
-          if (!item.variantId) continue;
-
-          const availableKeys = await tx.licenseKey.findMany({
-            where: {
-              variantId: item.variantId,
-              status: 'AVAILABLE',
-            },
-            take: item.quantity,
-          });
-
-          const variant = await tx.productVariant.findUnique({
-            where: { id: item.variantId },
-            include: { product: true },
-          });
-
-          for (const k of availableKeys) {
-            await tx.licenseKey.update({
-              where: { id: k.id },
-              data: {
-                status: 'SOLD',
-                orderId: order.id,
-                soldAt: new Date(),
-              },
-            });
-
-            allocatedKeysList.push({
-              variantName: `${variant?.product.title} (${variant?.name})`,
-              keyCode: k.keyCode,
-            });
-          }
-
-          if (variant) {
-            await tx.productVariant.update({
-              where: { id: variant.id },
-              data: {
-                stock: Math.max(0, variant.stock - item.quantity),
-              },
-            });
-          }
-        }
-
-        await tx.order.update({
-          where: { id: order.id },
-          data: {
-            paymentStatus: 'PAID',
-            orderStatus: 'COMPLETED',
-            deliveredKeys: JSON.stringify(allocatedKeysList),
-          },
-        });
+      const result = await processTelegramOrderAction({
+        orderNumber: order.orderNumber,
+        action: 'CONFIRMED',
+        adminName: session.name || session.email || 'Admin',
       });
 
-      return NextResponse.json({ success: true, allocatedKeysList });
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Failed to approve order' }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, order: result.order });
     }
 
     if (action === 'CANCEL') {
-      await prisma.order.update({
+      const order = await prisma.order.findUnique({
         where: { id: orderId },
-        data: {
-          orderStatus: 'CANCELLED',
-          paymentStatus: 'FAILED',
-        },
       });
-      return NextResponse.json({ success: true });
+
+      if (!order) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+
+      const result = await processTelegramOrderAction({
+        orderNumber: order.orderNumber,
+        action: 'INVALID',
+        adminName: session.name || session.email || 'Admin',
+      });
+
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Failed to cancel order' }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, order: result.order });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

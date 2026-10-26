@@ -13,8 +13,8 @@ export function WhatsAppButton({
 }) {
   const pathname = usePathname();
 
-  // Hide on admin routes
-  if (pathname?.startsWith('/admin')) return null;
+  // Hide on admin & payment routes
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout/payment')) return null;
 
   const url = `https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
     defaultMessage

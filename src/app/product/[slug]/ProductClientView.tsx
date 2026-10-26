@@ -127,11 +127,11 @@ export default function ProductClientView({
     <div className="max-w-[1440px] mx-auto px-3 sm:px-5 py-6 space-y-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400">
+        <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400">
           Home
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
-        <Link href="/shop" className="hover:text-violet-600 dark:hover:text-violet-400">
+        <Link href="/shop" className="hover:text-blue-600 dark:hover:text-blue-400">
           Shop
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
@@ -141,10 +141,10 @@ export default function ProductClientView({
       </nav>
 
       {/* Main Product Layout: 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white/95 dark:bg-[#0f172a]/95 p-5 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm backdrop-blur-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
         {/* Left Column: Image & Guarantee Box (5 Cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/[0.08]">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
             <Image
               src={formatImageUrl(product.image)}
               alt={product.title}
@@ -153,7 +153,7 @@ export default function ProductClientView({
               className="object-cover"
             />
             {discountPercent > 0 && (
-              <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-black px-2.5 py-1 rounded-full shadow">
+              <span className="absolute top-3 left-3 bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-xs">
                 -{discountPercent}% OFF
               </span>
             )}
@@ -164,7 +164,7 @@ export default function ProductClientView({
           </div>
 
           {/* Guarantee Badges Box */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200/80 dark:border-white/[0.08] space-y-2.5 text-xs">
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2.5 text-xs">
             <div className="flex items-center gap-2 text-slate-800 dark:text-white font-bold">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               <span>SolutionsBD ভেরিফাইড গ্যারান্টি</span>
@@ -194,7 +194,7 @@ export default function ProductClientView({
         <div className="lg:col-span-7 space-y-5">
           {/* Brand & Stock Status */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black tracking-widest text-violet-600 dark:text-violet-400 uppercase bg-violet-50 dark:bg-violet-950/60 px-2.5 py-1 rounded-md border border-violet-200/50 dark:border-violet-800/30">
+            <span className="text-xs font-bold tracking-wider text-blue-600 dark:text-blue-400 uppercase bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-md border border-blue-200/50 dark:border-blue-800/30">
               {product.brand} Official
             </span>
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
@@ -219,14 +219,14 @@ export default function ProductClientView({
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span className="text-slate-600 dark:text-slate-300 font-semibold flex items-center gap-1">
-              <Award className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              <Award className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Verified Digital Product
             </span>
           </div>
 
           {/* Pricing Box */}
-          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] flex items-baseline gap-3">
-            <span className="text-3xl font-black text-violet-600 dark:text-violet-400">
+          <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 flex items-baseline gap-3">
+            <span className="text-3xl font-black text-blue-600 dark:text-blue-400">
               {formatPrice(selectedVariant.price)}
             </span>
             {selectedVariant.originalPrice && (
@@ -235,7 +235,7 @@ export default function ProductClientView({
               </span>
             )}
             {discountPercent > 0 && (
-              <span className="text-xs font-extrabold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/60 px-2 py-0.5 rounded-full ml-auto">
+              <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/60 px-2 py-0.5 rounded-full ml-auto">
                 Save {formatPrice((selectedVariant.originalPrice || 0) - selectedVariant.price)} ({discountPercent}%)
               </span>
             )}
@@ -253,14 +253,14 @@ export default function ProductClientView({
                   onClick={() => setSelectedVariant(v)}
                   className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between ${
                     selectedVariant.id === v.id
-                      ? 'border-violet-600 dark:border-violet-500 bg-violet-50/70 dark:bg-violet-950/50 ring-2 ring-violet-500/20'
-                      : 'border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-violet-500/40'
+                      ? 'border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/50 ring-2 ring-blue-500/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/70 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
                   <span className="text-xs font-bold text-slate-800 dark:text-white">{v.name}</span>
                   <div className="flex items-center justify-between mt-1 text-[11px]">
                     <span className="text-slate-500 dark:text-slate-400">{v.validity}</span>
-                    <span className="font-extrabold text-violet-600 dark:text-violet-400">
+                    <span className="font-extrabold text-blue-600 dark:text-blue-400">
                       {formatPrice(v.price)}
                     </span>
                   </div>
@@ -335,13 +335,13 @@ export default function ProductClientView({
       </div>
 
       {/* Tabs: Description, Activation Guide, Customer Reviews */}
-      <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-8 shadow-sm space-y-6 backdrop-blur-xl">
-        <div className="flex border-b border-slate-200 dark:border-white/[0.08] gap-6 text-sm font-bold overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold overflow-x-auto">
           <button
             onClick={() => setActiveTab('desc')}
             className={`pb-3 transition-colors border-b-2 whitespace-nowrap ${
               activeTab === 'desc'
-                ? 'border-violet-600 dark:border-violet-400 text-violet-600 dark:text-violet-400'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
             }`}
           >
@@ -351,7 +351,7 @@ export default function ProductClientView({
             onClick={() => setActiveTab('guide')}
             className={`pb-3 transition-colors border-b-2 whitespace-nowrap ${
               activeTab === 'guide'
-                ? 'border-violet-600 dark:border-violet-400 text-violet-600 dark:text-violet-400'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
             }`}
           >
@@ -361,7 +361,7 @@ export default function ProductClientView({
             onClick={() => setActiveTab('reviews')}
             className={`pb-3 transition-colors border-b-2 whitespace-nowrap ${
               activeTab === 'reviews'
-                ? 'border-violet-600 dark:border-violet-400 text-violet-600 dark:text-violet-400'
+                ? 'border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
             }`}
           >
@@ -378,11 +378,11 @@ export default function ProductClientView({
 
         {activeTab === 'guide' && (
           <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
-            <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/40 rounded-2xl p-4 text-violet-950 dark:text-violet-200 space-y-2">
-              <h4 className="font-bold text-sm text-violet-900 dark:text-violet-300">
+            <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/40 rounded-2xl p-4 text-blue-950 dark:text-blue-200 space-y-2">
+              <h4 className="font-bold text-sm text-blue-900 dark:text-blue-300">
                 কীভাবে লাইসেন্স কি সংগ্রহ ও অ্যাক্টিভেট করবেন?
               </h4>
-              <ol className="list-decimal list-inside space-y-1.5 text-xs text-violet-900/90 dark:text-violet-200/90 leading-relaxed">
+              <ol className="list-decimal list-inside space-y-1.5 text-xs text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
                 <li>চেকআউটে bKash বা Nagad দিয়ে অর্ডার সম্পন্ন করুন।</li>
                 <li>অর্ডার সম্পন্ন হওয়ার সাথে সাথে স্ক্রিনে ২৫ ডিজিটের লাইসেন্স কোড দেখতে পাবেন।</li>
                 <li>আপনার ক্রয়কৃত সফটওয়্যারটি ওপেন করে Settings &gt; Activation এ গিয়ে কোডটি পেস্ট করুন।</li>

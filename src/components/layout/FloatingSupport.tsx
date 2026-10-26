@@ -6,7 +6,7 @@ import { MessageCircle, ArrowUp } from 'lucide-react';
 
 export default function FloatingSupport() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout/payment')) return null;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

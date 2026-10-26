@@ -192,7 +192,7 @@ export default function CustomerDashboardClient({
       {/* Top Header Card */}
       <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-8 shadow-sm backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-violet-500/20 shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-blue-500/20 shrink-0">
             {(user.name || user.email || 'U')[0].toUpperCase()}
           </div>
           <div>
@@ -226,7 +226,7 @@ export default function CustomerDashboardClient({
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Link
             href="/shop"
-            className="flex-1 md:flex-none text-center py-2.5 px-4 rounded-xl text-xs font-bold text-white brand-gradient-btn shadow-md shadow-violet-500/20"
+            className="flex-1 md:flex-none text-center py-2.5 px-4 rounded-xl text-xs font-bold text-white brand-gradient-btn shadow-md shadow-blue-500/20"
           >
             Explore Catalog
           </Link>
@@ -247,7 +247,7 @@ export default function CustomerDashboardClient({
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap ${
             activeTab === 'overview'
-              ? 'bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -259,7 +259,7 @@ export default function CustomerDashboardClient({
           onClick={() => setActiveTab('orders')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap ${
             activeTab === 'orders'
-              ? 'bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -271,7 +271,7 @@ export default function CustomerDashboardClient({
           onClick={() => setActiveTab('licenses')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap ${
             activeTab === 'licenses'
-              ? 'bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -283,7 +283,7 @@ export default function CustomerDashboardClient({
           onClick={() => setActiveTab('profile')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap ${
             activeTab === 'profile'
-              ? 'bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm'
+              ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
@@ -300,7 +300,7 @@ export default function CustomerDashboardClient({
             <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Total Orders</span>
-                <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
                   <ShoppingBag className="w-4 h-4" />
                 </div>
               </div>
@@ -355,7 +355,7 @@ export default function CustomerDashboardClient({
           </div>
 
           {/* Quick Banner for Digital Vault */}
-          <div className="bg-gradient-to-r from-violet-600 via-indigo-600 to-sky-600 rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-blue-950 border border-slate-800 rounded-3xl p-6 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
               <h2 className="text-lg font-black flex items-center justify-center sm:justify-start gap-2">
                 <Key className="w-5 h-5 text-amber-300" />
@@ -367,7 +367,7 @@ export default function CustomerDashboardClient({
             </div>
             <button
               onClick={() => setActiveTab('licenses')}
-              className="py-2.5 px-5 bg-white text-violet-700 hover:bg-slate-100 rounded-xl font-extrabold text-xs transition-all shadow shrink-0 flex items-center gap-2"
+              className="py-2.5 px-5 bg-white text-blue-700 hover:bg-slate-100 rounded-xl font-extrabold text-xs transition-all shadow shrink-0 flex items-center gap-2"
             >
               <span>Open Key Vault</span>
               <ArrowRight className="w-4 h-4" />
@@ -381,7 +381,7 @@ export default function CustomerDashboardClient({
               {initialOrders.length > 0 && (
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className="text-xs font-bold text-violet-600 hover:underline"
+                  className="text-xs font-bold text-blue-600 hover:underline"
                 >
                   View All Orders
                 </button>
@@ -421,7 +421,7 @@ export default function CustomerDashboardClient({
                       </span>
                       <Link
                         href={`/order-success/${order.orderNumber}`}
-                        className="text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400 border border-violet-500/20 px-3 py-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-950/30"
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30"
                       >
                         Receipt
                       </Link>
@@ -492,7 +492,7 @@ export default function CustomerDashboardClient({
                     {order.items?.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between text-xs py-1">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-violet-500/10 text-violet-600 flex items-center justify-center font-bold">
+                          <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
                             {idx + 1}
                           </div>
                           <div>
@@ -516,7 +516,7 @@ export default function CustomerDashboardClient({
                     <div className="text-slate-500 flex flex-wrap items-center gap-3">
                       <span>Method: <strong className="text-slate-700 dark:text-slate-300">{order.paymentMethod}</strong></span>
                       {order.paymentTrxId && (
-                        <span>TrxID: <code className="bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-violet-600 dark:text-violet-400 font-bold">{order.paymentTrxId}</code></span>
+                        <span>TrxID: <code className="bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[11px] font-mono text-blue-600 dark:text-blue-400 font-bold">{order.paymentTrxId}</code></span>
                       )}
                     </div>
 
@@ -585,11 +585,11 @@ export default function CustomerDashboardClient({
                 return (
                   <div
                     key={index}
-                    className="p-5 rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-500/[0.03] to-indigo-500/[0.05] dark:bg-slate-900/60 space-y-3 relative overflow-hidden"
+                    className="p-5 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/[0.03] to-indigo-500/[0.05] dark:bg-slate-900/60 space-y-3 relative overflow-hidden"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                           {lic.orderNumber}
                         </span>
                         <h3 className="font-extrabold text-sm text-slate-900 dark:text-white mt-0.5">
@@ -623,7 +623,7 @@ export default function CustomerDashboardClient({
                           href={lic.keyCode.replace('INVITE:', '').trim()}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-violet-600 dark:text-violet-400 font-bold hover:underline flex items-center gap-1"
+                          className="text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           <span>Open Activation Link</span>
@@ -674,7 +674,7 @@ export default function CustomerDashboardClient({
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Your Name"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
                     required
                   />
                 </div>
@@ -709,7 +709,7 @@ export default function CustomerDashboardClient({
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
                     placeholder="01XXXXXXXXX"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
                   />
                 </div>
               </div>
@@ -731,7 +731,7 @@ export default function CustomerDashboardClient({
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Enter current password"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
                   />
                 </div>
               </div>
@@ -748,7 +748,7 @@ export default function CustomerDashboardClient({
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimum 6 characters"
-                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
+                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
                     />
                   </div>
                 </div>
@@ -764,7 +764,7 @@ export default function CustomerDashboardClient({
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Re-type new password"
-                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
+                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
                     />
                   </div>
                 </div>
@@ -774,7 +774,7 @@ export default function CustomerDashboardClient({
             <button
               type="submit"
               disabled={savingProfile}
-              className="py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn shadow-md shadow-violet-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
+              className="py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn shadow-md shadow-blue-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
             >
               {savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
             </button>

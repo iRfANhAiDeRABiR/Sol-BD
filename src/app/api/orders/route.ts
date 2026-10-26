@@ -3,23 +3,25 @@ import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { getAdminSession } from '@/lib/admin-auth';
 import { getCustomerSession } from '@/lib/customer-auth';
+import { sendTelegramOrderNotification } from '@/lib/telegram';
+import { sendOrderConfirmationEmail } from '@/lib/orderConfirmationEmail';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const {
-      customerName,
-      customerEmail,
-      customerPhone,
-      items,
-      paymentMethod,
-      paymentTrxId,
-      senderPhone,
-      couponCode,
-      userId,
-    } = body;
+    const customerName = body.customerName || body.customer?.name || '';
+    const customerEmail = body.customerEmail || body.customer?.email || '';
+    const customerPhone = body.customerPhone || body.customer?.phone || '';
+    const paymentMethod = body.paymentMethod || body.payment?.method || 'BKASH_MANUAL';
+    const paymentTrxId = body.paymentTrxId || body.payment?.transactionId || '';
+    const senderPhone = body.senderPhone || body.payment?.senderNumber || '';
+    const receiverNumber = body.receiverNumber || body.payment?.paymentNumber || process.env.NEXT_PUBLIC_BKASH_PERSONAL_NUMBER || '01641699879';
+    const couponCode = body.couponCode || null;
+    const notes = body.notes || null;
+    const userId = body.userId;
+    const items = body.items;
 
     const trimmedName = (customerName || '').trim();
     const trimmedEmail = (customerEmail || '').trim().toLowerCase();
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     // -------------------------------------------------------------
     let calculatedSubtotal = 0;
     const validatedItems: Array<{
-      variantId: string;
+      variantId: string | null;
       productName: string;
       variantName: string;
       quantity: number;
@@ -68,26 +70,30 @@ export async function POST(request: Request) {
 
     for (const rawItem of items) {
       const qty = Math.max(1, Math.min(100, Math.floor(Number(rawItem.quantity) || 1)));
-      if (!rawItem.variantId) {
-        return NextResponse.json({ error: 'Each order item must specify a valid variant.' }, { status: 400 });
+      let variant = null;
+      const targetVariantId = rawItem.variantId || rawItem.optionId;
+
+      if (targetVariantId) {
+        variant = await prisma.productVariant.findUnique({
+          where: { id: targetVariantId },
+          include: { product: true },
+        });
       }
 
-      const variant = await prisma.productVariant.findUnique({
-        where: { id: rawItem.variantId },
-        include: { product: true },
-      });
-
-      if (!variant) {
-        return NextResponse.json({ error: `Product variant not found: ${rawItem.variantId}` }, { status: 400 });
+      if (!variant && rawItem.productId) {
+        variant = await prisma.productVariant.findFirst({
+          where: { productId: rawItem.productId },
+          include: { product: true },
+        });
       }
 
-      const verifiedUnitPrice = variant.price;
+      const verifiedUnitPrice = variant ? variant.price : (Number(rawItem.unitPrice) || 0);
       calculatedSubtotal += verifiedUnitPrice * qty;
 
       validatedItems.push({
-        variantId: variant.id,
-        productName: variant.product.title,
-        variantName: variant.name,
+        variantId: variant ? variant.id : null,
+        productName: variant ? variant.product.title : (rawItem.productName || 'Digital License'),
+        variantName: variant ? variant.name : (rawItem.optionName || 'Standard Edition'),
         quantity: qty,
         unitPrice: verifiedUnitPrice,
       });
@@ -183,6 +189,69 @@ export async function POST(request: Request) {
 
       return order;
     });
+
+    // Send instant Telegram alert with [Confirm] and [Invalid] buttons
+    try {
+      await sendTelegramOrderNotification({
+        orderNumber: result.orderNumber,
+        customerName: result.customerName,
+        customerEmail: result.customerEmail,
+        customerPhone: result.customerPhone,
+        items: validatedItems.map((it) => ({
+          productName: it.productName,
+          quantity: it.quantity,
+          lineTotal: it.unitPrice * it.quantity,
+        })),
+        total: result.totalAmount,
+        discount: result.discountAmount,
+        couponCode: result.couponCode,
+        paymentMethod: result.paymentMethod,
+        senderNumber: result.senderPhone || 'N/A',
+        receiverNumber,
+        transactionId: result.paymentTrxId || 'PENDING',
+        notes: result.notes,
+      });
+    } catch (teleErr) {
+      console.warn('Telegram alert skipped or failed:', teleErr);
+    }
+
+    // Send professional Order Confirmation receipt email asynchronously
+    if (result.customerEmail) {
+      sendOrderConfirmationEmail({
+        order: {
+          orderNumber: result.orderNumber,
+          total: result.totalAmount,
+        },
+        customer: {
+          name: result.customerName,
+          email: result.customerEmail,
+          phone: result.customerPhone,
+        },
+        items: validatedItems.map((it) => ({
+          productName: it.productName,
+          optionName: it.variantName,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+        })),
+        totals: {
+          subtotal: calculatedSubtotal,
+          discount: verifiedDiscount,
+          total: result.totalAmount,
+        },
+        paymentLabel:
+          paymentMethod === 'BKASH_MANUAL'
+            ? 'bKash Send Money'
+            : paymentMethod === 'NAGAD_MANUAL'
+            ? 'Nagad Send Money'
+            : paymentMethod === 'ROCKET_MANUAL'
+            ? 'Rocket Send Money'
+            : String(paymentMethod),
+        paymentTrxId: result.paymentTrxId || undefined,
+        senderPhone: result.senderPhone || undefined,
+      }).catch((emailErr) => {
+        console.warn('Order confirmation email failed to send:', emailErr);
+      });
+    }
 
     return NextResponse.json({
       success: true,

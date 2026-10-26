@@ -21,10 +21,7 @@ export function Base64EncoderClient() {
       if (mode === "encode") {
         // Encode UTF-8 string to Base64
         const bytes = new TextEncoder().encode(input);
-        let binary = "";
-        for (let i = 0; i < bytes.length; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
+        const binary = String.fromCharCode(...bytes);
         setOutput(btoa(binary));
       } else {
         // Decode Base64 to UTF-8 string

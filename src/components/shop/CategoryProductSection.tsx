@@ -59,7 +59,7 @@ function getCategoryIcon(iconName?: string | null) {
   if (icon.includes('project') || icon.includes('kanban') || icon.includes('task')) {
     return <FolderKanban className="w-5 h-5 text-amber-500" />;
   }
-  return <Sparkles className="w-5 h-5 text-violet-500" />;
+  return <Sparkles className="w-5 h-5 text-blue-500" />;
 }
 
 export default function CategoryProductSection({
@@ -79,24 +79,24 @@ export default function CategoryProductSection({
   return (
     <section
       id={`cat-${category.slug}`}
-      className="scroll-mt-20 space-y-4 p-5 rounded-2xl bg-white/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] shadow-sm backdrop-blur-md"
+      className="scroll-mt-20 space-y-4 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs"
     >
       {/* Category Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-white/[0.06]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-600/10 dark:bg-violet-400/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
             {getCategoryIcon(category.icon || category.name)}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 {category.name}
               </h2>
-              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                 {products.length} {products.length === 1 ? 'item' : 'items'}
               </span>
               {hasMoreThanTwoRows && !expanded && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
                   Showing 2 rows
                 </span>
               )}
@@ -113,7 +113,7 @@ export default function CategoryProductSection({
           {hasMoreThanTwoRows && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-1"
             >
               <span>{expanded ? 'Collapse to 2 rows' : `View all ${products.length}`}</span>
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -122,7 +122,7 @@ export default function CategoryProductSection({
 
           <Link
             href={categoryUrl}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-700 text-white shadow-sm shadow-violet-600/20 transition-all flex items-center gap-1 group"
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs shadow-blue-600/20 transition-all flex items-center gap-1 group"
           >
             <span>Only {category.name}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -142,7 +142,7 @@ export default function CategoryProductSection({
         <div className="pt-2 text-center">
           <button
             onClick={() => setExpanded(true)}
-            className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline inline-flex items-center gap-1"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
           >
             <span>+ Expand remaining {products.length - MAX_TWO_ROWS} products in {category.name}</span>
             <ChevronDown className="w-3.5 h-3.5" />

@@ -7,17 +7,10 @@ import { Phone, MessageCircle, Send, Instagram } from 'lucide-react';
 
 export default function TopTicker() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout/payment')) return null;
 
   return (
-    <div className="w-full text-white text-[11px] font-medium relative z-50 overflow-hidden no-print print:hidden select-none"
-      style={{
-        background: 'linear-gradient(90deg, hsl(0,74%,42%) 0%, hsl(0,82%,50%) 50%, hsl(0,74%,42%) 100%)',
-        color: '#ffffff',
-        padding: '6px 14px',
-        boxShadow: '0 2px 14px hsla(0,80%,45%,0.30)',
-      }}
-    >
+    <div className="w-full text-slate-300 text-[11px] font-medium relative z-50 overflow-hidden no-print print:hidden select-none bg-[#0B0F19] border-b border-white/[0.08] py-1.5 px-3 sm:px-5">
       <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Call Helpline */}
         <div className="flex items-center gap-2 flex-shrink-0 relative z-10">
@@ -46,8 +39,8 @@ export default function TopTicker() {
                 <span className="text-[10.5px] font-semibold text-white/90 whitespace-nowrap">
                   ✅ Secure bKash &amp; Nagad
                 </span>
-                <span className="flex-shrink-0 bg-white text-[10px] font-extrabold tracking-[0.08em] uppercase rounded-full px-3 py-[2px] whitespace-nowrap text-red-600 transition-transform group-hover:scale-105 shadow-sm">
-                  🔥 Order Now!
+                <span className="flex-shrink-0 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-bold tracking-[0.06em] uppercase rounded-full px-2.5 py-[2px] whitespace-nowrap transition-transform group-hover:scale-105">
+                  🔥 Order Now
                 </span>
               </Link>
             </div>
@@ -62,8 +55,8 @@ export default function TopTicker() {
                 <span className="text-[10.5px] font-semibold text-white/90 whitespace-nowrap">
                   ⭐ 50,000+ Happy Customers
                 </span>
-                <span className="flex-shrink-0 bg-white text-[10px] font-extrabold tracking-[0.08em] uppercase rounded-full px-3 py-[2px] whitespace-nowrap text-red-600 transition-transform group-hover:scale-105 shadow-sm">
-                  🔥 Order Now!
+                <span className="flex-shrink-0 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-bold tracking-[0.06em] uppercase rounded-full px-2.5 py-[2px] whitespace-nowrap transition-transform group-hover:scale-105">
+                  🔥 Order Now
                 </span>
               </Link>
             </div>
@@ -78,8 +71,8 @@ export default function TopTicker() {
                 <span className="text-[10.5px] font-semibold text-white/90 whitespace-nowrap">
                   ✅ Secure bKash &amp; Nagad
                 </span>
-                <span className="flex-shrink-0 bg-white text-[10px] font-extrabold tracking-[0.08em] uppercase rounded-full px-3 py-[2px] whitespace-nowrap text-red-600 transition-transform group-hover:scale-105 shadow-sm">
-                  🔥 Order Now!
+                <span className="flex-shrink-0 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-bold tracking-[0.06em] uppercase rounded-full px-2.5 py-[2px] whitespace-nowrap transition-transform group-hover:scale-105">
+                  🔥 Order Now
                 </span>
               </Link>
             </div>
@@ -94,8 +87,8 @@ export default function TopTicker() {
                 <span className="text-[10.5px] font-semibold text-white/90 whitespace-nowrap">
                   ⭐ 50,000+ Happy Customers
                 </span>
-                <span className="flex-shrink-0 bg-white text-[10px] font-extrabold tracking-[0.08em] uppercase rounded-full px-3 py-[2px] whitespace-nowrap text-red-600 transition-transform group-hover:scale-105 shadow-sm">
-                  🔥 Order Now!
+                <span className="flex-shrink-0 bg-blue-500/20 text-blue-300 border border-blue-400/30 text-[10px] font-bold tracking-[0.06em] uppercase rounded-full px-2.5 py-[2px] whitespace-nowrap transition-transform group-hover:scale-105">
+                  🔥 Order Now
                 </span>
               </Link>
             </div>

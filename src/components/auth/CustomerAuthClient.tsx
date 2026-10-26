@@ -145,7 +145,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
       {/* Card Container */}
       <div className="bg-white/95 dark:bg-[#0f172a]/90 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 shadow-2xl dark:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.6)] p-6 sm:p-8 backdrop-blur-xl relative overflow-hidden transition-all">
         {/* Subtle upper border highlight */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent pointer-events-none" />
         {isSuspended && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 flex items-start gap-3 text-xs leading-relaxed">
             <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-500" />
@@ -199,7 +199,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
               </div>
@@ -219,7 +219,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
                 <button
@@ -235,7 +235,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
+              className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
             >
               {loading ? (
                 <span>Signing In...</span>
@@ -264,7 +264,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
               </div>
@@ -282,7 +282,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
               </div>
@@ -300,7 +300,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-violet-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 font-medium"
                   required
                 />
                 <button
@@ -334,7 +334,7 @@ export default function CustomerAuthClient({ defaultTab = 'login' }: CustomerAut
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn flex items-center justify-center gap-2 shadow-md shadow-violet-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
+              className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
             >
               {loading ? (
                 <span>Creating Account...</span>

@@ -1,38 +1,127 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ShoppingCart,
-  Trash2,
-  Plus,
-  Minus,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
   Copy,
   Check,
+  CheckCircle2,
   ShieldCheck,
   Zap,
-  Tag,
-  Phone,
-  MessageSquare,
-  Lock,
+  ShoppingBag,
+  Trash2,
+  AlertCircle,
+  Headphones,
+  FileDown,
+  MessageCircle,
 } from 'lucide-react';
-import { formatPrice, formatImageUrl } from '@/lib/utils';
-import { useCart } from '@/components/cart/CartProvider';
+import { useCart } from './CartProvider';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
+import { formatPrice, formatImageUrl } from '@/lib/utils';
+import { BkashLogo, NagadLogo, RocketLogo } from '@/components/common/PaymentLogos';
+import type {
+  PaymentGatewayOrder,
+  SubmittedOrderData,
+} from '@/components/payment/PaymentGatewayPage';
+import styles from '@/app/cart/cart.module.css';
+
+interface SubmittedOrder {
+  id: string;
+  orderNumber: string;
+  total: number;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  paymentMethod?: string;
+  senderNumber?: string;
+  transactionId?: string;
+  status?: string;
+}
+
+interface NormalizedCartItem {
+  id: string;
+  productId: string;
+  slug: string;
+  name: string;
+  optionLabel: string;
+  image: string;
+  price: number;
+  originalPrice?: number | null;
+  quantity: number;
+  rawOptionId?: string;
+}
+
+type PaymentProviderKey = 'bkash' | 'nagad' | 'rocket';
+
+interface PaymentConfig {
+  id: PaymentProviderKey;
+  name: string;
+  label: string;
+  type: string;
+  number: string;
+  ussd: string;
+  accent: string;
+  accentBg: string;
+  LogoComponent: React.ComponentType<{ className?: string; size?: number }>;
+}
+
+const PAYMENT_CONFIGS: Record<PaymentProviderKey, PaymentConfig> = {
+  bkash: {
+    id: 'bkash',
+    name: 'bKash',
+    label: 'bKash Send Money',
+    type: 'Personal Account',
+    number: process.env.NEXT_PUBLIC_BKASH_PERSONAL_NUMBER || '01641699879',
+    ussd: '*247#',
+    accent: '#E2136E',
+    accentBg: 'rgba(226, 19, 110, 0.1)',
+    LogoComponent: BkashLogo,
+  },
+  nagad: {
+    id: 'nagad',
+    name: 'Nagad',
+    label: 'Nagad Send Money',
+    type: 'Personal Account',
+    number: process.env.NEXT_PUBLIC_NAGAD_PERSONAL_NUMBER || '01641699879',
+    ussd: '*167#',
+    accent: '#F6821F',
+    accentBg: 'rgba(246, 130, 31, 0.1)',
+    LogoComponent: NagadLogo,
+  },
+  rocket: {
+    id: 'rocket',
+    name: 'Rocket',
+    label: 'Rocket Send Money',
+    type: 'Personal Account',
+    number: process.env.NEXT_PUBLIC_ROCKET_PERSONAL_NUMBER || '015189028225',
+    ussd: '*322#',
+    accent: '#8C3494',
+    accentBg: 'rgba(140, 52, 148, 0.1)',
+    LogoComponent: RocketLogo,
+  },
+};
+
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '8801410699879';
+
+function isValidBdPhone(phone: string): boolean {
+  const clean = phone.replace(/[\s\-()]/g, '');
+  return /^(?:\+?88)?01[3-9]\d{8}$/.test(clean);
+}
+
+function normalizeBdPhone(phone: string): string {
+  const clean = phone.replace(/[\s\-()]/g, '');
+  if (clean.startsWith('+88')) return clean.slice(3);
+  if (clean.startsWith('88')) return clean.slice(2);
+  return clean;
+}
 
 export default function CartPageClient() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
   const {
     items,
     updateQuantity,
@@ -46,729 +135,843 @@ export default function CartPageClient() {
     total,
   } = useCart();
 
-  // Also support zustand store items if any were added there
   const zustandItems = useCartStore((state) => state.items);
 
-  // Active items: prefer CartProvider, fallback to zustand
-  const activeItems = items.length > 0 ? items : zustandItems.map((z) => ({
-    productId: z.productId,
-    slug: z.productSlug,
-    name: z.productTitle,
-    image: z.image,
-    price: z.price,
-    originalPrice: z.originalPrice,
-    optionId: z.variantId,
-    optionName: z.variantName,
-    quantity: z.quantity,
-  }));
+  // Normalize items from either Context or Zustand
+  const activeItems: NormalizedCartItem[] = useMemo(() => {
+    const source = items.length > 0 ? items : zustandItems;
+    return source.map((it: any) => ({
+      id: it.optionId || it.variantId || it.productId,
+      productId: it.productId,
+      slug: it.slug || it.productSlug || it.productId,
+      name: it.name || it.productTitle || 'Digital License',
+      optionLabel: it.optionName || it.variantName || '',
+      image: it.image,
+      price: it.price,
+      originalPrice: it.originalPrice,
+      quantity: it.quantity,
+      rawOptionId: it.optionId,
+    }));
+  }, [items, zustandItems]);
 
-  const activeSubtotal = items.length > 0 ? subtotal : activeItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-  const activeTotal = Math.max(0, activeSubtotal - discountAmount);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [requirements, setRequirements] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentProviderKey>('bkash');
 
-  // Step Tracker: 1 = Cart Review, 2 = Customer Info, 3 = Payment Method
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-
-  // Coupon state
   const [couponInput, setCouponInput] = useState('');
-  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponFeedback, setCouponFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
 
-  // Customer Form
-  const [customer, setCustomer] = useState({
-    name: '',
-    phone: '',
-    whatsapp: '',
-    email: '',
-    notes: '',
-  });
-  const [sameAsPhone, setSameAsPhone] = useState(true);
-  const [loggedInUser, setLoggedInUser] = useState<{ id: string; name: string; email: string; phone: string | null } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submittedOrder, setSubmittedOrder] = useState<SubmittedOrder | null>(null);
+  const [orderVerificationStatus, setOrderVerificationStatus] = useState<'PENDING' | 'CONFIRMED' | 'INVALID'>('PENDING');
 
-  React.useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.authenticated && data.user) {
-          setLoggedInUser(data.user);
-          setCustomer((prev) => ({
-            ...prev,
-            name: prev.name || data.user.name || '',
-            email: prev.email || data.user.email || '',
-            phone: prev.phone || data.user.phone || '',
-            whatsapp: prev.whatsapp || data.user.phone || '',
-          }));
+  useEffect(() => {
+    setMounted(true);
+
+    try {
+      const stored = sessionStorage.getItem('sbd_submitted_order') || localStorage.getItem('sbd_submitted_order');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.orderNumber || parsed?.id) {
+          setSubmittedOrder(parsed);
+          setOrderVerificationStatus(parsed.status === 'CONFIRMED' ? 'CONFIRMED' : 'PENDING');
         }
-      })
-      .catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
-  // Payment Selection
-  const [paymentMethod, setPaymentMethod] = useState<'BKASH_MANUAL' | 'NAGAD_MANUAL' | 'ROCKET_MANUAL' | 'UPAY_MANUAL'>('BKASH_MANUAL');
-  const [trxId, setTrxId] = useState('');
-  const [senderPhone, setSenderPhone] = useState('');
-  const [submittingOrder, setSubmittingOrder] = useState(false);
-  const [copiedNumber, setCopiedNumber] = useState(false);
+  // Compute subtotal and total
+  const activeSubtotal = useMemo(() => {
+    if (subtotal > 0) return subtotal;
+    return activeItems.reduce((acc, it) => acc + it.price * it.quantity, 0);
+  }, [subtotal, activeItems]);
 
-  const MERCHANT_NUMBERS = {
-    BKASH_MANUAL: { name: 'bKash Personal / Send Money', number: '01641699879' },
-    NAGAD_MANUAL: { name: 'Nagad Personal / Send Money', number: '01641699879' },
-    ROCKET_MANUAL: { name: 'Rocket Personal / Send Money', number: '015189028225' },
-    UPAY_MANUAL: { name: 'Upay Personal / Send Money', number: '01518902822' },
+  const activeTotal = useMemo(() => {
+    if (total > 0) return total;
+    return Math.max(0, activeSubtotal - (discountAmount || 0));
+  }, [total, activeSubtotal, discountAmount]);
+
+  const currentPayment = PAYMENT_CONFIGS[selectedMethod] || PAYMENT_CONFIGS.bkash;
+
+  const validateCustomerForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!customerName.trim() || customerName.trim().length < 2) {
+      errors.name = 'অনুগ্রহ করে আপনার পুরো নাম লিখুন (Full name is required)';
+    }
+
+    if (!customerPhone.trim()) {
+      errors.phone = 'সঠিক ফোন নম্বর প্রয়োজন (Phone number is required)';
+    } else if (!isValidBdPhone(customerPhone.trim())) {
+      errors.phone = 'সঠিক বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)';
+    }
+
+    if (!customerEmail.trim()) {
+      errors.email = 'লাইসেন্স পাওয়ার জন্য ইমেইল ঠিকানা প্রয়োজন (Email is required)';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())) {
+      errors.email = 'একটি বৈধ ইমেইল ঠিকানা প্রদান করুন (Valid email address required)';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  const handleCopyNumber = (num: string) => {
-    navigator.clipboard.writeText(num);
-    setCopiedNumber(true);
-    toast.success('Number copied to clipboard!');
-    setTimeout(() => setCopiedNumber(false), 2000);
-  };
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = (e: FormEvent) => {
     e.preventDefault();
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
 
-    setApplyingCoupon(true);
-    if (code === 'WELCOME10') {
+    if (code === 'SBD10' || code === 'SAVE10' || code === 'TECH10') {
       const discount = Math.round(activeSubtotal * 0.1);
-      applyCoupon('WELCOME10', discount);
-      toast.success('Promo code WELCOME10 applied! 10% Discount saved.');
-    } else if (code === 'EID50') {
-      applyCoupon('EID50', 50);
-      toast.success('Promo code EID50 applied! ৳50 Discount saved.');
+      applyCoupon(code, discount);
+      setCouponFeedback({ tone: 'success', message: `কুপন কোড ${code} সফলভাবে প্রয়োগ করা হয়েছে! (১০% ছাড়)` });
+      toast.success(`Coupon ${code} applied: 10% discount!`);
+    } else if (code === 'WELCOME50') {
+      applyCoupon(code, 50);
+      setCouponFeedback({ tone: 'success', message: `কুপন কোড ${code} প্রয়োগ করা হয়েছে! (৳৫০ ছাড়)` });
+      toast.success(`Coupon ${code} applied: ৳50 discount!`);
     } else {
-      toast.error('Invalid promo code.');
+      setCouponFeedback({ tone: 'error', message: 'অবৈধ বা মেয়াদোত্তীর্ণ কুপন কোড। অনুগ্রহ করে সঠিক কোড দিন।' });
+      toast.error('Invalid or expired coupon code.');
     }
-    setApplyingCoupon(false);
   };
 
-  const handleProceedToStep2 = () => {
-    if (activeItems.length === 0) {
-      toast.error('Your cart is empty.');
-      return;
-    }
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    setCouponInput('');
+    setCouponFeedback(null);
+    toast.info('Coupon removed.');
   };
 
-  const handleProceedToStep3 = (e: React.FormEvent) => {
+  const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customer.name.trim() || !customer.phone.trim() || !customer.email.trim()) {
-      toast.error('Please fill in Name, Phone, and Email.');
-      return;
-    }
-    setStep(3);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
-  const handleSubmitOrder = async () => {
-    if (!trxId.trim() || !senderPhone.trim()) {
-      toast.error('Please enter the Transaction ID (TrxID) and Sender Phone Number.');
+    if (!validateCustomerForm()) {
+      toast.error('অনুগ্রহ করে নাম, সঠিক মোবাইল নম্বর এবং ডেলিভারি ইমেইল লিখুন।');
       return;
     }
 
-    setSubmittingOrder(true);
-    try {
-      const orderPayload = {
-        userId: loggedInUser?.id,
-        customerName: customer.name,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        items: activeItems.map((item) => ({
-          variantId: item.optionId,
-          productName: (item as any).productTitle || item.name,
-          variantName: (item as any).variantName || item.optionName || 'Standard License',
-          quantity: item.quantity,
-          unitPrice: item.price,
-        })),
-        totalAmount: activeTotal,
-        discountAmount,
-        couponCode: couponCode || null,
-        paymentMethod,
-        paymentTrxId: trxId.trim(),
-        senderPhone: senderPhone.trim(),
-      };
+    const orderRef = `SBD-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
-      });
+    const pendingPaymentOrder: PaymentGatewayOrder = {
+      refId: orderRef,
+      customerName: customerName.trim(),
+      customerPhone: normalizeBdPhone(customerPhone.trim()),
+      customerEmail: customerEmail.trim(),
+      total: activeTotal,
+      totalPrice: formatPrice(activeTotal),
+      paymentMethod: selectedMethod,
+      notes: requirements.trim() || null,
+      couponCode: couponCode || null,
+      items: activeItems.map((item) => ({
+        productId: item.productId,
+        optionId: item.rawOptionId || item.id,
+        variantId: item.id,
+        optionName: item.optionLabel || undefined,
+        productName: item.name,
+        productImage: item.image,
+        unitPrice: item.price,
+        originalUnitPrice: item.originalPrice ?? null,
+        quantity: item.quantity,
+      })),
+    };
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit order.');
-      }
-
-      toast.success('Order placed successfully! Redirecting...');
-      const targetOrderNumber = data.orderNumber || data.order?.orderNumber;
-      if (targetOrderNumber) {
-        router.push(`/order-success/${targetOrderNumber}`);
-      } else {
-        router.push('/my-licenses');
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'Checkout failed. Please retry or contact WhatsApp support.');
-    } finally {
-      setSubmittingOrder(false);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('sbd_pending_payment', JSON.stringify(pendingPaymentOrder));
+      sessionStorage.setItem('techbd_pending_payment', JSON.stringify(pendingPaymentOrder));
     }
+
+    router.push('/checkout/payment');
   };
 
   if (!mounted) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-24 text-center">
-        <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-xs text-slate-400 font-medium">কার্ট লোড করা হচ্ছে...</p>
-      </div>
-    );
-  }
-
-  if (activeItems.length === 0 && step === 1) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-6">
-        <div className="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
-          <ShoppingCart className="w-10 h-10" />
-        </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-            আপনার কার্ট বর্তমানে খালি (Your Cart is Empty)
-          </h1>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Explore our genuine software catalog for Windows, Office, IDM, and antivirus licenses with instant automated delivery.
-          </p>
-        </div>
-        <Link
-          href="/shop"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-lg shadow-violet-600/25 transition-all active:scale-95"
-        >
-          <span>Explore Software Catalog</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-5 py-8 space-y-8">
-      {/* 4-Step Progress Indicator */}
-      <div className="flex items-center justify-center max-w-xl mx-auto">
-        <div className="flex items-center w-full justify-between relative">
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 dark:bg-slate-800 -translate-y-1/2 z-0" />
-
-          {/* Step 1 */}
-          <button
-            onClick={() => setStep(1)}
-            className={`relative z-10 flex flex-col items-center gap-1.5 focus:outline-none`}
-          >
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors shadow-sm ${
-                step >= 1
-                  ? 'bg-violet-600 text-white shadow-violet-600/30'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-              }`}
-            >
-              1
-            </div>
-            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-              Cart Review
-            </span>
-          </button>
-
-          {/* Step 2 */}
-          <button
-            onClick={() => step > 2 && setStep(2)}
-            disabled={step < 2}
-            className={`relative z-10 flex flex-col items-center gap-1.5 focus:outline-none`}
-          >
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors shadow-sm ${
-                step >= 2
-                  ? 'bg-violet-600 text-white shadow-violet-600/30'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-              }`}
-            >
-              2
-            </div>
-            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-              Customer Info
-            </span>
-          </button>
-
-          {/* Step 3 */}
-          <div className={`relative z-10 flex flex-col items-center gap-1.5`}>
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-colors shadow-sm ${
-                step === 3
-                  ? 'bg-violet-600 text-white shadow-violet-600/30'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
-              }`}
-            >
-              3
-            </div>
-            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-              Payment & TrxID
-            </span>
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <div className="py-24 text-center">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm text-slate-500 font-medium">অর্ডার ফর্ম লোড হচ্ছে...</p>
           </div>
         </div>
-      </div>
+      </main>
+    );
+  }
 
-      {/* Main Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left 2 Cols: Step View */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* STEP 1: Cart Items Review */}
-          {step === 1 && (
-            <div className="rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
-                <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <ShoppingCart className="w-4 h-4 text-violet-500" />
-                  <span>Your Selected Items ({activeItems.length})</span>
-                </h2>
-                <button
-                  onClick={clearCart}
-                  className="text-xs text-rose-500 hover:text-rose-600 font-semibold"
-                >
-                  Clear All
-                </button>
-              </div>
+  // ── 1. Order Placed / Verification Status View ─────────────────────────
+  if (submittedOrder) {
+    const isConfirmed = orderVerificationStatus === 'CONFIRMED';
+    const isInvalid = orderVerificationStatus === 'INVALID';
+    const isPending = orderVerificationStatus === 'PENDING';
 
-              <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                {activeItems.map((item) => (
-                  <div
-                    key={`${item.productId}-${item.optionId}`}
-                    className="py-4 flex gap-4 items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 border border-slate-200/60 dark:border-white/[0.06]">
-                        <Image src={formatImageUrl(item.image)} alt={item.name} fill className="object-cover" />
-                      </div>
-                      <div className="min-w-0 space-y-0.5">
-                        <Link
-                          href={`/product/${item.slug}`}
-                          className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-violet-600 line-clamp-1"
-                        >
-                          {item.name}
-                        </Link>
-                        {item.optionName && (
-                          <span className="text-[11px] text-violet-600 dark:text-violet-400 font-semibold block">
-                            {item.optionName}
-                          </span>
-                        )}
-                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 block">
-                          {formatPrice(item.price)}
-                        </span>
-                      </div>
-                    </div>
+    const whatsappText = encodeURIComponent(
+      `Hello SolutionsBD Support! I placed order #${submittedOrder.orderNumber} for ${formatPrice(submittedOrder.total)} via ${submittedOrder.paymentMethod || 'bKash'}. TrxID: ${submittedOrder.transactionId || 'N/A'}. Please confirm my license key delivery.`
+    );
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`;
 
-                    {/* Quantity Controls & Delete */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-white/[0.06] p-1">
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1, item.optionId)}
-                          className="p-1 hover:text-violet-600 transition-colors"
-                        >
-                          <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="px-2 text-xs font-black font-mono">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1, item.optionId)}
-                          className="p-1 hover:text-violet-600 transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => removeItem(item.productId, item.optionId)}
-                        className="text-slate-400 hover:text-rose-500 p-1 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Next Button */}
-              <button
-                onClick={handleProceedToStep2}
-                className="w-full py-3 rounded-xl brand-gradient-btn text-white font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-violet-600/20 active:scale-95 transition-all mt-4"
-              >
-                <span>Proceed to Customer Details</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {/* STEP 2: Customer Information */}
-          {step === 2 && (
-            <form
-              onSubmit={handleProceedToStep3}
-              className="rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-6 shadow-sm space-y-4"
+    return (
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.confirmationCard}>
+            {/* Dynamic Status Icon */}
+            <div
+              className={styles.successCheckWrap}
+              style={{
+                background: isConfirmed
+                  ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                  : isInvalid
+                  ? 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
+                  : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+              }}
+              aria-hidden="true"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
-                <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-                  Customer & Delivery Details
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="text-xs text-violet-600 dark:text-violet-400 font-bold flex items-center gap-1"
+              {isConfirmed ? '✓' : isInvalid ? '✕' : '⏳'}
+            </div>
+
+            {/* Dynamic Title */}
+            <h1 className={styles.confirmationTitle}>
+              {isConfirmed && 'Payment Verified & Order Confirmed!'}
+              {isInvalid && 'TrxID Verification Failed!'}
+              {isPending && 'Order Placed — Verification In Progress'}
+            </h1>
+
+            {/* Dynamic Status Pill */}
+            <div
+              className={styles.confirmationBadge}
+              style={{
+                background: isConfirmed
+                  ? 'rgba(16, 185, 129, 0.12)'
+                  : isInvalid
+                  ? 'rgba(239, 68, 68, 0.12)'
+                  : 'rgba(245, 158, 11, 0.12)',
+                borderColor: isConfirmed
+                  ? 'rgba(16, 185, 129, 0.4)'
+                  : isInvalid
+                  ? 'rgba(239, 68, 68, 0.4)'
+                  : 'rgba(245, 158, 11, 0.4)',
+                color: isConfirmed ? '#10B981' : isInvalid ? '#EF4444' : '#F59E0B',
+              }}
+            >
+              <span aria-hidden="true">
+                {isConfirmed ? '✅' : isInvalid ? '❌' : '⏳'}
+              </span>
+              <span>
+                {isConfirmed && 'Payment Verified & Confirmed (অনুমোদিত)'}
+                {isInvalid && 'ভুল TrxID (Verification Failed - বাতিল)'}
+                {isPending && 'Payment Submitted — Pending Verification (ভেরিফিকেশন চলছে)'}
+              </span>
+            </div>
+
+            {/* Subtitle Description */}
+            <p className={styles.subtitle} style={{ marginBottom: '24px' }}>
+              {isConfirmed &&
+                `আপনার পেমেন্ট সফলভাবে অনুমোদিত হয়েছে। কিছুক্ষণের মধ্যে আপনার ইমেইলে (${submittedOrder.customerEmail}) লাইসেন্স কি ও সেটআপ নির্দেশনা পৌঁছে যাবে।`}
+              {isInvalid &&
+                `আপনার প্রদত্ত Transaction ID (${submittedOrder.transactionId}) যাচাই করা সম্ভব হয়নি। অনুগ্রহ করে পেমেন্ট গেটওয়েতে সঠিক TrxID লিখুন।`}
+              {isPending &&
+                'আপনার পেমেন্ট তথ্য সফলভাবে গ্রহণ করা হয়েছে এবং ভেরিফিকেশন চলছে। অ্যাডমিন কনফার্ম করা মাত্রই এই স্ক্রিন স্বয়ংক্রিয়ভাবে আপডেট হবে।'}
+            </p>
+
+            {/* If Invalid, direct button to return to Payment Gateway */}
+            {isInvalid && (
+              <div style={{ marginBottom: '24px' }}>
+                <Link
+                  href="/checkout/payment"
+                  className={styles.submitOrderButton}
+                  style={{
+                    background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                    maxWidth: '340px',
+                    margin: '0 auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                  }}
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back to Cart</span>
-                </button>
+                  🔄 পুনরায় TrxID দিন (Re-enter TrxID in Gateway)
+                </Link>
               </div>
+            )}
 
-              <div className="space-y-3 text-xs">
-                {loggedInUser ? (
-                  <div className="p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-between text-xs text-violet-800 dark:text-violet-300">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>
-                        Signed in as <strong>{loggedInUser.name}</strong> ({loggedInUser.email}). Licenses will be added to your account vault.
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                    <span>
-                      Have an account? <Link href="/login?redirect=/checkout" className="text-violet-600 dark:text-violet-400 font-bold hover:underline">Sign In</Link> to track orders and save your license keys automatically.
-                    </span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Full Name (আপনার নাম) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    placeholder="Customer Name"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex flex-col">
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5 sm:min-h-[2.5rem]">
-                      Mobile Phone (ফোন নাম্বার) *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={customer.phone}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomer((prev) => ({
-                          ...prev,
-                          phone: val,
-                          whatsapp: sameAsPhone ? val : prev.whatsapp,
-                        }));
-                      }}
-                      placeholder="017XXXXXXXX"
-                      className="w-full h-10 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50 mt-auto"
-                    />
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5 sm:min-h-[2.5rem]">
-                      Email Address (ইমেইল - লাইসেন্স কি পাঠানোর জন্য) *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={customer.email}
-                      onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                      placeholder="customer@email.com"
-                      className="w-full h-10 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-violet-500/50 mt-auto"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      checked={sameAsPhone}
-                      onChange={(e) => {
-                        setSameAsPhone(e.target.checked);
-                        if (e.target.checked) {
-                          setCustomer((prev) => ({ ...prev, whatsapp: prev.phone }));
-                        }
-                      }}
-                      className="rounded text-violet-600 focus:ring-violet-500"
-                    />
-                    <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
-                      WhatsApp number is the same as Phone number
-                    </span>
-                  </label>
-                </div>
-
-                {!sameAsPhone && (
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      WhatsApp Number (হোয়াটসঅ্যাপ নাম্বার)
-                    </label>
-                    <input
-                      type="tel"
-                      value={customer.whatsapp}
-                      onChange={(e) => setCustomer({ ...customer, whatsapp: e.target.value })}
-                      placeholder="018XXXXXXXX"
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Special Notes (যদি কোনো নির্দেশনা থাকে - ঐচ্ছিক)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={customer.notes}
-                    onChange={(e) => setCustomer({ ...customer, notes: e.target.value })}
-                    placeholder="e.g. Please also send invoice to my secondary email..."
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs focus:outline-none focus:ring-2 focus:ring-violet-500/50"
-                  />
-                </div>
+            {/* Complete Order Details Grid */}
+            <div className={styles.orderDetailsGrid}>
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Order Reference</span>
+                <span className={styles.orderDetailValue}>#{submittedOrder.orderNumber || submittedOrder.id}</span>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl brand-gradient-btn text-white font-black text-sm flex items-center justify-center gap-2 shadow-md shadow-violet-600/20 active:scale-95 transition-all mt-4"
-              >
-                <span>Continue to Payment (পেমেন্ট অপশন)</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          )}
-
-          {/* STEP 3: Payment & TrxID Submission */}
-          {step === 3 && (
-            <div className="rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
-                <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
-                  Payment Method & TrxID Verification
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="text-xs text-violet-600 dark:text-violet-400 font-bold flex items-center gap-1"
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Verification Status</span>
+                <span
+                  className={styles.orderDetailValue}
+                  style={{
+                    color: isConfirmed ? '#10B981' : isInvalid ? '#EF4444' : '#F59E0B',
+                    fontWeight: 750,
+                  }}
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Back</span>
-                </button>
+                  {isConfirmed && '✅ Confirmed (অনুমোদিত)'}
+                  {isInvalid && '❌ Verification Failed (ভুল TrxID)'}
+                  {isPending && '⏳ Pending Verification (চলছে)'}
+                </span>
               </div>
-
-              {/* Payment Gateway Toggle */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {(
-                  [
-                    { id: 'BKASH_MANUAL', name: 'bKash', color: 'from-pink-500 to-rose-600' },
-                    { id: 'NAGAD_MANUAL', name: 'Nagad', color: 'from-orange-500 to-amber-600' },
-                    { id: 'ROCKET_MANUAL', name: 'Rocket', color: 'from-purple-600 to-indigo-700' },
-                    { id: 'UPAY_MANUAL', name: 'Upay', color: 'from-amber-500 to-yellow-600' },
-                  ] as const
-                ).map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(method.id)}
-                    className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 transition-all font-bold text-xs ${
-                      paymentMethod === method.id
-                        ? 'border-violet-600 bg-violet-500/10 text-violet-600 dark:text-violet-400 shadow-sm'
-                        : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                    }`}
-                  >
-                    <span className="font-extrabold text-sm">{method.name}</span>
-                    <span className="text-[10px] font-medium text-slate-400">Send Money</span>
-                  </button>
-                ))}
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Total Amount</span>
+                <span className={styles.orderDetailValue} style={{ color: '#2563eb', fontWeight: 800 }}>
+                  {formatPrice(submittedOrder.total)}
+                </span>
               </div>
-
-              {/* Step-by-Step Instructions Box */}
-              <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20 space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {MERCHANT_NUMBERS[paymentMethod].name}:
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Delivery Email</span>
+                <span className={styles.orderDetailValue}>{submittedOrder.customerEmail}</span>
+              </div>
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Customer Name</span>
+                <span className={styles.orderDetailValue}>{submittedOrder.customerName || 'N/A'}</span>
+              </div>
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Customer Phone</span>
+                <span className={styles.orderDetailValue}>{submittedOrder.customerPhone || 'N/A'}</span>
+              </div>
+              <div className={styles.orderDetailItem}>
+                <span className={styles.orderDetailLabel}>Payment Method</span>
+                <span className={styles.orderDetailValue}>{submittedOrder.paymentMethod || 'Mobile Banking'}</span>
+              </div>
+              {submittedOrder.senderNumber && (
+                <div className={styles.orderDetailItem}>
+                  <span className={styles.orderDetailLabel}>Sender Number</span>
+                  <span className={styles.orderDetailValue} style={{ fontFamily: 'var(--font-mono, monospace)' }}>
+                    {submittedOrder.senderNumber}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => handleCopyNumber(MERCHANT_NUMBERS[paymentMethod].number)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-violet-600 font-bold hover:bg-slate-50 transition-colors"
+                </div>
+              )}
+              {submittedOrder.transactionId && (
+                <div className={styles.orderDetailItem}>
+                  <span className={styles.orderDetailLabel}>Transaction ID (TrxID)</span>
+                  <span
+                    className={styles.orderDetailValue}
+                    style={{
+                      fontFamily: 'var(--font-mono, monospace)',
+                      fontWeight: 750,
+                      color: isInvalid ? '#EF4444' : '#10B981',
+                    }}
                   >
-                    {copiedNumber ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedNumber ? 'Copied' : 'Copy Number'}</span>
-                  </button>
+                    {submittedOrder.transactionId}
+                  </span>
                 </div>
+              )}
+            </div>
 
-                <div className="text-base font-black font-mono text-violet-600 dark:text-violet-400">
-                  {MERCHANT_NUMBERS[paymentMethod].number}
-                </div>
+            {/* Bottom Actions */}
+            <div className={styles.confirmationActions}>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.continueButton}
+                style={{
+                  background: '#25D366',
+                  color: '#ffffff',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                <MessageCircle size={16} />
+                <span>WhatsApp কনফার্মেশন (+8801410699879)</span>
+              </a>
 
-                <div className="space-y-1 text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
-                  <p>1. আপনার {MERCHANT_NUMBERS[paymentMethod].name.split(' ')[0]} অ্যাপ ওপেন করে <strong>Send Money</strong> সিলেক্ট করুন।</p>
-                  <p>2. প্রাপক নম্বরে উপরের নাম্বারটি দিন এবং মোট <strong>{formatPrice(activeTotal)}</strong> টাকা পাঠান।</p>
-                  <p>3. লেনদেন সফল হলে SMS বা অ্যাপ থেকে পাওয়া <strong>TrxID</strong> এবং আপনার <strong>সেন্ডার ফোন নম্বর</strong> নিচের বক্সে লিখে সাবমিট করুন।</p>
-                </div>
-              </div>
+              <Link
+                href="/downloads"
+                className={styles.continueButton}
+                style={{
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                <FileDown size={16} />
+                <span>সফটওয়্যার ডাউনলোড সেন্টারে যান →</span>
+              </Link>
 
-              {/* Inputs for TrxID and Sender Number */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="flex flex-col">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5 sm:min-h-[2.5rem]">
-                    Sender Phone Number (যে নাম্বার থেকে পাঠিয়েছেন) *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={senderPhone}
-                    onChange={(e) => setSenderPhone(e.target.value)}
-                    placeholder="017XXXXXXXX"
-                    className="w-full h-10 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-violet-500/50 mt-auto"
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5 sm:min-h-[2.5rem]">
-                    Transaction ID (TrxID) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={trxId}
-                    onChange={(e) => setTrxId(e.target.value.toUpperCase())}
-                    placeholder="e.g. BL99KJS882"
-                    className="w-full h-10 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-mono font-black text-emerald-600 dark:text-emerald-400 uppercase focus:outline-none focus:ring-2 focus:ring-violet-500/50 mt-auto"
-                  />
-                </div>
-              </div>
-
-              {/* Direct Submit Button */}
               <button
                 type="button"
-                onClick={handleSubmitOrder}
-                disabled={submittingOrder}
-                className="w-full py-3.5 rounded-xl brand-gradient-btn text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-violet-600/30 active:scale-95 transition-all disabled:opacity-50"
+                onClick={() => {
+                  try {
+                    sessionStorage.removeItem('sbd_submitted_order');
+                    localStorage.removeItem('sbd_submitted_order');
+                    sessionStorage.removeItem('sbd_pending_payment');
+                  } catch {}
+                  setSubmittedOrder(null);
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState({}, '', '/cart');
+                  }
+                }}
+                className={styles.continueButton}
+                style={{ cursor: 'pointer', background: 'none', border: '1px solid rgba(148, 163, 184, 0.4)' }}
               >
-                <Lock className="w-4 h-4" />
-                <span>{submittingOrder ? 'Processing Order...' : `Complete Order & Pay ${formatPrice(activeTotal)}`}</span>
+                + Start New Order
               </button>
-
-              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 leading-relaxed">
-                অর্ডার সম্পন্ন করার মাধ্যমে আপনি SolutionsBD-এর{' '}
-                <Link href="/policies/terms-and-conditions" target="_blank" className="text-violet-600 dark:text-violet-400 underline underline-offset-2 hover:opacity-80">
-                  শর্তাবলী
-                </Link>
-                ,{' '}
-                <Link href="/policies/refund-policy" target="_blank" className="text-violet-600 dark:text-violet-400 underline underline-offset-2 hover:opacity-80">
-                  রিফান্ড পলিসি
-                </Link>{' '}
-                ও{' '}
-                <Link href="/policies/delivery-info" target="_blank" className="text-violet-600 dark:text-violet-400 underline underline-offset-2 hover:opacity-80">
-                  ডেলিভারি তথ্যে
-                </Link>{' '}
-                সম্মত হচ্ছেন।
-              </p>
             </div>
-          )}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── 2. Empty State View ───────────────────────────────────────────────
+  if (activeItems.length === 0) {
+    return (
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.emptyState}>
+            <span className={styles.emptyIcon} aria-hidden="true">
+              🛒
+            </span>
+            <h1 className={styles.emptyTitle}>Your cart is empty</h1>
+            <p className={styles.emptySubtitle}>
+              You have not selected any digital software products yet. Browse our marketplace for genuine operating systems, office packages, CAD tools, and security suites.
+            </p>
+            <Link href="/shop" className={styles.emptyButton}>
+              <ShoppingBag size={18} />
+              <span>Browse Software Catalog →</span>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── 3. Active Two-Column Checkout View ──────────────────────────────────
+  return (
+    <main className={styles.page}>
+      <div className={styles.container}>
+        {/* Checkout Header */}
+        <div className={styles.header}>
+          <span className={styles.headerBadge}>Secure Digital Checkout</span>
+          <h1 className={styles.title}>
+            <span className={styles.titleGradient}>Checkout</span>
+          </h1>
+          <p className={styles.subtitle}>
+            Complete your customer details and mobile banking payment to receive genuine software licenses.
+          </p>
         </div>
 
-        {/* Right 1 Col: Financial Summary & Coupon Box */}
-        <div className="space-y-5">
-          {/* Order Summary Card */}
-          <div className="rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] p-5 shadow-sm space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
-              Financial Summary
-            </h3>
-
-            <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-              <div className="flex justify-between">
-                <span>Items Subtotal</span>
-                <span className="font-bold text-slate-900 dark:text-white">
-                  {formatPrice(activeSubtotal)}
-                </span>
-              </div>
-
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Coupon Discount ({couponCode})</span>
-                  <span>-{formatPrice(discountAmount)}</span>
+        {/* Two-Column Grid */}
+        <div className={styles.checkoutLayout}>
+          {/* ===============================================================
+              LEFT COLUMN (60%): CUSTOMER INFO & PAYMENT METHOD
+             =============================================================== */}
+          <form id="checkout-form" className={styles.leftColumn} onSubmit={handlePlaceOrder} noValidate>
+            {/* Step 1: Customer Information */}
+            <section className={styles.sectionCard} aria-labelledby="customer-info-title">
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionNumber}>1</span>
+                <div className={styles.sectionTitleGroup}>
+                  <h2 id="customer-info-title" className={styles.sectionTitle}>
+                    Customer Information
+                  </h2>
+                  <p className={styles.sectionSubtitle}>
+                    Provide your contact details where your digital licenses and invoices will be delivered.
+                  </p>
                 </div>
-              )}
-
-              <div className="flex justify-between">
-                <span>Instant Digital Delivery</span>
-                <span className="text-emerald-600 font-bold">FREE (0 ৳)</span>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 dark:border-white/[0.05] flex justify-between items-baseline text-sm font-black text-slate-900 dark:text-white">
-                <span>Total Amount</span>
-                <span className="text-lg font-black text-violet-600 dark:text-violet-400">
-                  {formatPrice(activeTotal)}
+              <div className={styles.formGrid}>
+                {/* Full Name */}
+                <div className={styles.formGroup}>
+                  <label htmlFor="customer-name" className={styles.formLabel}>
+                    <span>Full Name <span className={styles.formRequired}>*</span></span>
+                  </label>
+                  <input
+                    id="customer-name"
+                    name="name"
+                    type="text"
+                    required
+                    value={customerName}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (fieldErrors.name) {
+                        setFieldErrors((prev) => ({ ...prev, name: '' }));
+                      }
+                    }}
+                    placeholder="Enter your full name"
+                    autoComplete="name"
+                    className={`${styles.formInput} ${fieldErrors.name ? styles.formInputError : ''}`}
+                  />
+                  {fieldErrors.name && (
+                    <p className={styles.formErrorText}>{fieldErrors.name}</p>
+                  )}
+                </div>
+
+                <div className={styles.formGridTwoCol}>
+                  {/* Phone Number */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="customer-phone" className={styles.formLabel}>
+                      <span>Phone Number <span className={styles.formRequired}>*</span></span>
+                    </label>
+                    <input
+                      id="customer-phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={customerPhone}
+                      onChange={(e) => {
+                        setCustomerPhone(e.target.value);
+                        if (fieldErrors.phone) {
+                          setFieldErrors((prev) => ({ ...prev, phone: '' }));
+                        }
+                      }}
+                      placeholder="01XXXXXXXXX"
+                      autoComplete="tel"
+                      className={`${styles.formInput} ${fieldErrors.phone ? styles.formInputError : ''}`}
+                    />
+                    {fieldErrors.phone ? (
+                      <p className={styles.formErrorText}>{fieldErrors.phone}</p>
+                    ) : (
+                      <p className={styles.formHelpText}>Used for order delivery & verification alerts</p>
+                    )}
+                  </div>
+
+                  {/* Email Address */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="customer-email" className={styles.formLabel}>
+                      <span>Delivery Email Address <span className={styles.formRequired}>*</span></span>
+                    </label>
+                    <input
+                      id="customer-email"
+                      name="email"
+                      type="email"
+                      required
+                      value={customerEmail}
+                      onChange={(e) => {
+                        setCustomerEmail(e.target.value);
+                        if (fieldErrors.email) {
+                          setFieldErrors((prev) => ({ ...prev, email: '' }));
+                        }
+                      }}
+                      placeholder="your.email@example.com"
+                      autoComplete="email"
+                      className={`${styles.formInput} ${fieldErrors.email ? styles.formInputError : ''}`}
+                    />
+                    {fieldErrors.email ? (
+                      <p className={styles.formErrorText}>{fieldErrors.email}</p>
+                    ) : (
+                      <p className={styles.formHelpText}>Official license keys & setup guide will be sent here</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 2: Payment Method Selection */}
+            <section className={styles.sectionCard} aria-labelledby="payment-method-title">
+              <div className={styles.sectionHeader} style={{ marginBottom: '14px' }}>
+                <div className={styles.sectionTitleGroup}>
+                  <label id="payment-method-title" className={styles.formLabel} style={{ fontSize: '12px', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 0 }}>
+                    <span>PAYMENT METHOD <span className={styles.formRequired}>*</span></span>
+                  </label>
+                </div>
+              </div>
+
+              {/* 3 Selectable Payment Cards: bKash | Nagad | Rocket */}
+              <div className={styles.paymentCardsGrid} role="radiogroup" aria-label="Select Payment Method">
+                {(Object.keys(PAYMENT_CONFIGS) as PaymentProviderKey[]).map((key) => {
+                  const cfg = PAYMENT_CONFIGS[key];
+                  const isSelected = selectedMethod === key;
+                  const Logo = cfg.LogoComponent;
+
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      className={`${styles.paymentCard} ${isSelected ? styles.paymentCardSelected : ''}`}
+                      onClick={() => setSelectedMethod(key)}
+                    >
+                      <div className={styles.paymentCardLogoWrap}>
+                        <Logo className="w-6 h-6" size={24} />
+                      </div>
+                      <span className={styles.paymentCardName}>{cfg.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Single Helper Line under Payment Options */}
+              <div className={styles.paymentHintBar}>
+                <span>
+                  {selectedMethod === 'bkash' && `Send Money via bKash App or dial *247# to ${currentPayment.number}`}
+                  {selectedMethod === 'nagad' && `Send Money via Nagad App or dial *167# to ${currentPayment.number}`}
+                  {selectedMethod === 'rocket' && `Send Money via Rocket App or dial *322# to ${currentPayment.number}`}
                 </span>
+                <span className={styles.paymentHintBrand}>
+                  {currentPayment.name}
+                </span>
+              </div>
+
+              {/* Additional Requirements (Optional) */}
+              <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                <label htmlFor="order-requirements" className={styles.formLabel}>
+                  <span>Additional Requirements (Optional)</span>
+                </label>
+                <textarea
+                  id="order-requirements"
+                  name="requirements"
+                  rows={2}
+                  value={requirements}
+                  onChange={(e) => setRequirements(e.target.value)}
+                  placeholder="e.g. Need assistance with multi-seat setup, Mac/Windows version notes, etc."
+                  className={styles.formTextarea}
+                />
+              </div>
+            </section>
+
+            {/* Trust and Guarantee Badges */}
+            <div className={styles.trustBadgesRow}>
+              <div className={styles.trustBadgeItem}>
+                <ShieldCheck className={styles.trustBadgeIcon} style={{ color: '#10B981' }} />
+                <div>
+                  <h4 className={styles.trustBadgeTitle}>Genuine Software</h4>
+                  <p className={styles.trustBadgeDesc}>100% Authentic Retail Licenses</p>
+                </div>
+              </div>
+              <div className={styles.trustBadgeItem}>
+                <Zap className={styles.trustBadgeIcon} style={{ color: '#F59E0B' }} />
+                <div>
+                  <h4 className={styles.trustBadgeTitle}>Fast Delivery</h4>
+                  <p className={styles.trustBadgeDesc}>Sent directly to your delivery email</p>
+                </div>
+              </div>
+              <div className={styles.trustBadgeItem}>
+                <Headphones className={styles.trustBadgeIcon} style={{ color: '#2563eb' }} />
+                <div>
+                  <h4 className={styles.trustBadgeTitle}>Live Support</h4>
+                  <p className={styles.trustBadgeDesc}>24/7 WhatsApp & Ticket Help</p>
+                </div>
               </div>
             </div>
+          </form>
 
-            {/* Promo Code Box */}
-            <form onSubmit={handleApplyCoupon} className="pt-2 border-t border-slate-100 dark:border-white/[0.05] space-y-2">
-              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                <Tag className="w-3 h-3 text-violet-500" />
-                <span>Have a Promo Code?</span>
-              </label>
+          {/* ===============================================================
+              RIGHT COLUMN (40%): COMPLETE PRODUCT DETAILS & ORDER SUMMARY
+             =============================================================== */}
+          <aside className={styles.rightColumn} aria-label="Order Summary">
+            <div className={styles.orderSummaryCard}>
+              <h2 className={styles.orderSummaryTitle}>Your Order</h2>
+              <p className={styles.orderSummarySubtitle}>
+                Review your digital products before proceeding to payment.
+              </p>
 
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  placeholder="Enter promo code"
-                  className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-xs font-mono font-bold uppercase focus:outline-none"
-                />
+              {/* Product List */}
+              <div className={styles.productList} role="list">
+                {activeItems.map((item) => {
+                  const hasDiscount = item.originalPrice && item.originalPrice > item.price;
+
+                  return (
+                    <div
+                      key={`${item.productId}:${item.id}`}
+                      className={styles.productRow}
+                      role="listitem"
+                    >
+                      {/* Product Thumbnail */}
+                      <div className={styles.productThumbnail}>
+                        <Image
+                          src={formatImageUrl(item.image)}
+                          alt={item.name}
+                          width={75}
+                          height={75}
+                          className="object-contain"
+                        />
+                      </div>
+
+                      {/* Product Info */}
+                      <div className={styles.productInfo}>
+                        <Link href={`/product/${item.slug || item.productId}`} className={styles.productName}>
+                          {item.name}
+                        </Link>
+
+                        {item.optionLabel && (
+                          <span className={styles.productOptionBadge}>
+                            {item.optionLabel}
+                          </span>
+                        )}
+
+                        {/* Quantity controls */}
+                        <div className={styles.productQuantityControls}>
+                          <button
+                            type="button"
+                            className={styles.qtyButton}
+                            disabled={item.quantity <= 1}
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1, item.rawOptionId)}
+                            aria-label={`Decrease quantity of ${item.name}`}
+                          >
+                            −
+                          </button>
+                          <span className={styles.qtyValue}>{item.quantity}</span>
+                          <button
+                            type="button"
+                            className={styles.qtyButton}
+                            disabled={item.quantity >= 99}
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1, item.rawOptionId)}
+                            aria-label={`Increase quantity of ${item.name}`}
+                          >
+                            +
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.productRemoveBtn}
+                            onClick={() => removeItem(item.productId, item.rawOptionId)}
+                            aria-label={`Remove ${item.name} from order`}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Price Column */}
+                      <div className={styles.productPriceCol}>
+                        <span className={styles.productLineTotal}>
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                        {hasDiscount && (
+                          <span className={styles.productOriginalPrice}>
+                            {formatPrice(item.originalPrice! * item.quantity)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Coupon Section */}
+              <div className={styles.couponSection}>
+                <label htmlFor="coupon-input" className={styles.couponLabel}>
+                  Have a coupon code?
+                </label>
+
+                {couponCode ? (
+                  <div className={styles.couponAppliedBadge}>
+                    <span className={styles.couponAppliedText}>
+                      <span>✓ {couponCode} (৳{discountAmount} off)</span>
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.couponRemoveBtn}
+                      onClick={handleRemoveCoupon}
+                      aria-label="Remove applied coupon"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <form className={styles.couponForm} onSubmit={handleApplyCoupon}>
+                    <input
+                      id="coupon-input"
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase());
+                        if (couponFeedback?.tone === 'error') {
+                          setCouponFeedback(null);
+                        }
+                      }}
+                      placeholder="e.g. SBD10"
+                      className={styles.couponInput}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!couponInput.trim()}
+                      className={styles.couponApplyBtn}
+                    >
+                      Apply
+                    </button>
+                  </form>
+                )}
+
+                {couponFeedback && (
+                  <p
+                    className={
+                      couponFeedback.tone === 'success'
+                        ? styles.couponAppliedBadge
+                        : styles.couponError
+                    }
+                  >
+                    {couponFeedback.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Order Total Breakdown */}
+              <div className={styles.priceBreakdown}>
+                <div className={styles.priceRow}>
+                  <span>Products Subtotal</span>
+                  <span className={styles.priceRowValue}>{formatPrice(activeSubtotal)}</span>
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className={styles.priceRow}>
+                    <span>Coupon Discount</span>
+                    <span className={`${styles.priceRowValue} ${styles.priceRowSavings}`}>
+                      −{formatPrice(discountAmount)}
+                    </span>
+                  </div>
+                )}
+
+                <div className={styles.priceRow}>
+                  <span>Digital Delivery</span>
+                  <span className={styles.deliveryFree}>Free (Instant)</span>
+                </div>
+
+                <div className={styles.divider} />
+
+                <div className={styles.totalRow}>
+                  <span className={styles.totalLabel}>TOTAL PAYABLE</span>
+                  <span className={styles.totalAmount}>{formatPrice(activeTotal)}</span>
+                </div>
+              </div>
+
+              {/* Submit Order Button on the Right Side */}
+              <div style={{ marginTop: '20px', marginBottom: '8px' }}>
                 <button
                   type="submit"
-                  disabled={applyingCoupon}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+                  form="checkout-form"
+                  onClick={handlePlaceOrder}
+                  className={styles.submitOrderButton}
                 >
-                  Apply
+                  <span>পেমেন্ট গেটওয়েতে যান (Pay {formatPrice(activeTotal)}) →</span>
                 </button>
               </div>
 
-              {couponCode && (
-                <div className="flex items-center justify-between text-[11px] text-emerald-600 font-bold">
-                  <span>Applied: {couponCode}</span>
-                  <button type="button" onClick={removeCoupon} className="text-rose-500 underline">
-                    Remove
-                  </button>
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* Trust Guarantees */}
-          <div className="rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/[0.06] p-4 space-y-2.5 text-xs text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold">
-              <Zap className="w-4 h-4 text-amber-500" />
-              <span>Instant Automated Delivery</span>
+              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-3 leading-relaxed">
+                By submitting this order you agree to SolutionsBD&apos;s{' '}
+                <Link href="/policies/terms-and-conditions" target="_blank" className="text-blue-600 dark:text-blue-400 underline underline-offset-2">
+                  Terms
+                </Link>{' '}
+                &amp;{' '}
+                <Link href="/policies/refund-policy" target="_blank" className="text-blue-600 dark:text-blue-400 underline underline-offset-2">
+                  Refund Policy
+                </Link>
+                .
+              </p>
             </div>
-            <p className="text-[11px] leading-relaxed">
-              License keys are revealed immediately on-screen and dispatched to your email once payment is verified.
-            </p>
-
-            <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold pt-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>100% Genuine Retail Warranty</span>
-            </div>
-            <p className="text-[11px] leading-relaxed">
-              All product keys are checked against official vendor activation servers with replacement guarantee.
-            </p>
-          </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
-

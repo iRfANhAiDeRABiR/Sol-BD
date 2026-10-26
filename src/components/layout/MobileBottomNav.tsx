@@ -18,8 +18,8 @@ export default function MobileBottomNav() {
     setMounted(true);
   }, []);
 
-  // Hide on admin routes
-  if (pathname?.startsWith('/admin')) return null;
+  // Hide on admin & payment routes
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/checkout/payment')) return null;
 
   const displayCount = totalCount || zustandTotal;
 
@@ -42,7 +42,7 @@ export default function MobileBottomNav() {
             href={item.href}
             className={`flex flex-col items-center gap-1 text-[10px] font-bold transition-colors ${
               isActive
-                ? 'text-violet-600 dark:text-violet-400'
+                ? 'text-blue-600 dark:text-blue-400'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
             }`}
           >

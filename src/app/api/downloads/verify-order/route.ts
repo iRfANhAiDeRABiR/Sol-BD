@@ -1,0 +1,184 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getCustomerSession } from '@/lib/customer-auth';
+
+export const runtime = 'nodejs';
+
+function maskCustomerName(name: string | null | undefined): string {
+  if (!name) return 'Valued Customer';
+  const parts = name.trim().split(/\s+/);
+  return parts
+    .map((p) => {
+      if (p.length <= 2) return `${p[0]}*`;
+      return `${p[0]}${'*'.repeat(Math.min(p.length - 2, 4))}${p[p.length - 1]}`;
+    })
+    .join(' ');
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const rawOrderId = typeof body.orderId === 'string' ? body.orderId.trim() : '';
+    const rawContact =
+      typeof body.contact === 'string'
+        ? body.contact.trim()
+        : typeof body.phoneOrEmail === 'string'
+        ? body.phoneOrEmail.trim()
+        : '';
+
+    // 1. If an explicit order ID is submitted
+    if (rawOrderId) {
+      const cleanId = rawOrderId.replace(/^#+/, '').trim();
+
+      const order = await prisma.order.findFirst({
+        where: {
+          OR: [
+            { orderNumber: cleanId },
+            { id: cleanId },
+          ],
+        },
+        include: {
+          payments: true,
+          items: {
+            select: {
+              productName: true,
+              variantName: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        return NextResponse.json(
+          {
+            success: false,
+            valid: false,
+            reason: 'NOT_FOUND',
+            message: 'এই অর্ডার নম্বরটি পাওয়া যায়নি। অনুগ্রহ করে সঠিক অর্ডার আইডি লিখুন (যেমন: SBD-XXXXXX)।',
+          },
+          { status: 404 }
+        );
+      }
+
+      // If contact verification is provided, ensure phone or email matches
+      if (rawContact) {
+        const cleanContact = rawContact.toLowerCase();
+        const dbEmail = (order.customerEmail || '').toLowerCase();
+        const dbPhoneDigits = (order.customerPhone || '').replace(/\D/g, '');
+        const inputDigits = rawContact.replace(/\D/g, '');
+
+        const emailMatches = Boolean(dbEmail && dbEmail === cleanContact);
+        const phoneMatches = Boolean(
+          inputDigits &&
+            dbPhoneDigits &&
+            (dbPhoneDigits.endsWith(inputDigits.slice(-8)) || inputDigits.endsWith(dbPhoneDigits.slice(-8)))
+        );
+
+        if (!emailMatches && !phoneMatches) {
+          return NextResponse.json(
+            {
+              success: false,
+              valid: false,
+              reason: 'CONTACT_MISMATCH',
+              message: 'প্রদত্ত ফোন নম্বর বা ইমেইলের সাথে এই অর্ডারের তথ্য মিলছে না।',
+            },
+            { status: 403 }
+          );
+        }
+      }
+
+      const isConfirmed =
+        order.orderStatus === 'COMPLETED' ||
+        order.orderStatus === 'PAID' ||
+        order.paymentStatus === 'PAID';
+
+      if (isConfirmed) {
+        return NextResponse.json({
+          success: true,
+          valid: true,
+          orderNumber: order.orderNumber,
+          customerName: maskCustomerName(order.customerName),
+          status: 'CONFIRMED',
+          message: 'অর্ডার ভেরিফিকেশন সফল হয়েছে! ডাউনলোড লিঙ্ক আনলক করা হয়েছে।',
+        });
+      }
+
+      if (
+        order.orderStatus === 'CANCELLED' ||
+        order.orderStatus === 'REFUNDED'
+      ) {
+        return NextResponse.json({
+          success: false,
+          valid: false,
+          reason: 'CANCELLED',
+          orderNumber: order.orderNumber,
+          message: 'এই অর্ডারটি বাতিল বা রিফান্ড করা হয়েছে। নতুন লাইসেন্স নিতে আমাদের স্টোর ভিজিট করুন।',
+        });
+      }
+
+      // If pending payment/verification
+      return NextResponse.json({
+        success: false,
+        valid: false,
+        reason: 'PENDING',
+        orderNumber: order.orderNumber,
+        message: 'আপনার অর্ডারটি এখনও পেমেন্ট ভেরিফিকেশন বা পেন্ডিং অবস্থায় আছে। পেমেন্ট কনফার্ম হলে ডাউনলোড সক্রিয় হবে।',
+      });
+    }
+
+    // 2. If no orderId is passed, check logged-in customer's order history
+    const customer = await getCustomerSession();
+
+    if (!customer || !customer.email) {
+      return NextResponse.json({
+        success: false,
+        valid: false,
+        reason: 'NOT_LOGGED_IN',
+        message: 'লগইন করা নেই এবং কোনো অর্ডার আইডি দেওয়া হয়নি।',
+      });
+    }
+
+    const confirmedOrder = await prisma.order.findFirst({
+      where: {
+        customerEmail: customer.email,
+        OR: [
+          { orderStatus: 'COMPLETED' },
+          { orderStatus: 'PAID' },
+          { paymentStatus: 'PAID' },
+        ],
+      },
+      select: { id: true, orderNumber: true, customerName: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (confirmedOrder) {
+      return NextResponse.json({
+        success: true,
+        valid: true,
+        userLoggedIn: true,
+        orderNumber: confirmedOrder.orderNumber,
+        customerName: confirmedOrder.customerName,
+        status: 'CONFIRMED',
+        message: 'আপনার একাউন্টে কনফার্মড অর্ডার পাওয়া গেছে। ডাউনলোড সক্রিয়।',
+      });
+    }
+
+    return NextResponse.json({
+      success: false,
+      valid: false,
+      userLoggedIn: true,
+      reason: 'NO_CONFIRMED_ORDERS',
+      message: 'আপনার একাউন্টে কোনো কনফার্মড অর্ডার পাওয়া যায়নি। অনুগ্রহ করে আপনার অর্ডার আইডি প্রদান করুন।',
+    });
+  } catch (error: any) {
+    console.error('Order download verify error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        valid: false,
+        message: 'অর্ডার যাচাই করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      },
+      { status: 500 }
+    );
+  }
+}

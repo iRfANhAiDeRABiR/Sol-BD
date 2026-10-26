@@ -139,7 +139,7 @@ const columns = [
 
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <div className="rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/80 dark:border-white/[0.08] p-5 shadow-sm space-y-4 hover:border-violet-500/40 hover:shadow-md transition-all group select-none">
+    <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs space-y-4 hover:border-blue-500/40 hover:shadow-md transition-all group select-none">
       <div className="space-y-2.5">
         {/* Rating Stars */}
         <div className="flex items-center gap-1">
@@ -153,12 +153,12 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
         </p>
       </div>
 
-      <div className="pt-3 border-t border-slate-100 dark:border-white/[0.05] space-y-1">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1">
         <div className="flex items-center justify-between">
-          <span className="font-bold text-xs text-slate-900 dark:text-white">
+          <span className="font-semibold text-xs text-slate-900 dark:text-white">
             {testimonial.name}
           </span>
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
             <CheckCircle2 className="w-3 h-3" />
             Verified
           </span>
@@ -177,7 +177,7 @@ export default function TestimonialsSection() {
       <div className="max-w-[1440px] mx-auto px-3 sm:px-5 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 bg-violet-500/10 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
             Verified Customer Reviews
           </span>

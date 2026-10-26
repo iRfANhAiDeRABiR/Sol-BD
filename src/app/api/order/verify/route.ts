@@ -1,0 +1,182 @@
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { answerTelegramCallbackQuery, updateTelegramMessageStatus } from "@/lib/telegram";
+
+export const runtime = "nodejs";
+
+let lastTelegramSync = 0;
+const TELEGRAM_SYNC_THROTTLE_MS = 3000;
+
+async function syncTelegramUpdates() {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) return;
+
+  const now = Date.now();
+  if (now - lastTelegramSync < TELEGRAM_SYNC_THROTTLE_MS) {
+    return;
+  }
+  lastTelegramSync = now;
+
+  try {
+    const teleRes = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`);
+    const teleData = await teleRes.json();
+    if (!teleData.ok || !Array.isArray(teleData.result) || teleData.result.length === 0) {
+      return;
+    }
+
+    for (const item of teleData.result) {
+      const cb = item.callback_query;
+      if (cb && cb.data) {
+        const dataStr = String(cb.data).trim();
+        let action: "CONFIRMED" | "INVALID" | "DONE" | null = null;
+        let orderRef: string | null = null;
+
+        if (dataStr.startsWith("confirm_")) {
+          action = "CONFIRMED";
+          orderRef = dataStr.replace(/^confirm_/, "");
+        } else if (dataStr.startsWith("invalid_")) {
+          action = "INVALID";
+          orderRef = dataStr.replace(/^invalid_/, "");
+        } else if (
+          dataStr.startsWith("done_") ||
+          dataStr.startsWith("confirmed_done_") ||
+          dataStr.startsWith("invalid_done_")
+        ) {
+          action = "DONE";
+          orderRef = dataStr.replace(/^(done|confirmed_done|invalid_done)_/, "");
+        }
+
+        if (orderRef) {
+          const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+          const senderId = String(cb.from?.id ?? "");
+          const chatId = String(cb.message?.chat?.id ?? "");
+
+          if (!adminChatId || (senderId !== adminChatId && chatId !== adminChatId)) {
+            console.warn(`[Security Alert] Ignored unauthorized Telegram polling update from sender: ${senderId}`);
+            continue;
+          }
+
+          const adminName = cb.from?.username ? `@${cb.from.username}` : cb.from?.first_name || "Admin";
+
+          if (action === "DONE") {
+            await answerTelegramCallbackQuery(cb.id, `Order #${orderRef} has already been processed.`);
+          } else if (action === "CONFIRMED") {
+            // Update DB to PAID / VERIFIED
+            await prisma.order.updateMany({
+              where: { orderNumber: orderRef },
+              data: { paymentStatus: "PAID", orderStatus: "PAID" },
+            });
+            await prisma.payment.updateMany({
+              where: { order: { orderNumber: orderRef } },
+              data: { paymentStatus: "VERIFIED" },
+            });
+
+            await answerTelegramCallbackQuery(cb.id, `✅ Order #${orderRef} Confirmed by ${adminName}!`);
+
+            if (cb.message?.chat?.id && cb.message?.message_id) {
+              await updateTelegramMessageStatus({
+                chatId: cb.message.chat.id,
+                messageId: cb.message.message_id,
+                orderNumber: orderRef,
+                action: "CONFIRMED",
+                adminName,
+                originalText: cb.message.text,
+              });
+            }
+          } else if (action === "INVALID") {
+            // Update DB to FAILED / CANCELLED
+            await prisma.order.updateMany({
+              where: { orderNumber: orderRef },
+              data: { paymentStatus: "FAILED", orderStatus: "CANCELLED" },
+            });
+            await prisma.payment.updateMany({
+              where: { order: { orderNumber: orderRef } },
+              data: { paymentStatus: "REJECTED" },
+            });
+
+            await answerTelegramCallbackQuery(cb.id, `❌ Order #${orderRef} marked as Invalid by ${adminName}!`);
+
+            if (cb.message?.chat?.id && cb.message?.message_id) {
+              await updateTelegramMessageStatus({
+                chatId: cb.message.chat.id,
+                messageId: cb.message.message_id,
+                orderNumber: orderRef,
+                action: "INVALID",
+                adminName,
+                originalText: cb.message.text,
+              });
+            }
+          }
+        }
+      }
+
+      // Acknowledge update offset to Telegram so it doesn't stay in queue
+      await fetch(`https://api.telegram.org/bot${botToken}/getUpdates?offset=${item.update_id + 1}`).catch(() => {});
+    }
+  } catch (err) {
+    console.error("Error syncing Telegram updates:", err);
+  }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const ref = searchParams.get("ref");
+
+  if (!ref) {
+    return NextResponse.json({ status: "PENDING", error: "Missing ref parameter" }, { status: 400 });
+  }
+
+  const cleanRef = ref.trim();
+
+  // Process any pending button clicks from Telegram first
+  await syncTelegramUpdates();
+
+  // Query order status from database
+  try {
+    const order = await prisma.order.findUnique({
+      where: { orderNumber: cleanRef },
+      include: { payments: true },
+    });
+
+    if (!order) {
+      return NextResponse.json({ status: "PENDING", refId: cleanRef });
+    }
+
+    const isPaid = order.paymentStatus === "PAID" || order.orderStatus === "PAID" || order.orderStatus === "COMPLETED";
+    const isFailed = order.paymentStatus === "FAILED" || order.orderStatus === "CANCELLED";
+
+    const details = {
+      refId: order.orderNumber,
+      orderNumber: order.orderNumber,
+      total: order.totalAmount,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      customerPhone: order.customerPhone,
+      paymentMethod: order.paymentMethod || "Mobile Banking",
+      senderNumber: order.senderPhone || null,
+      transactionId: order.paymentTrxId || null,
+    };
+
+    if (isPaid) {
+      return NextResponse.json({
+        status: "CONFIRMED",
+        ...details,
+      });
+    }
+
+    if (isFailed) {
+      return NextResponse.json({
+        status: "INVALID",
+        ...details,
+      });
+    }
+
+    return NextResponse.json({
+      status: "PENDING",
+      ...details,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ status: "PENDING", error: err.message }, { status: 500 });
+  }
+}
+

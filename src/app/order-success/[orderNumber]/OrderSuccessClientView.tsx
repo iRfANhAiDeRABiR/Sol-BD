@@ -60,7 +60,7 @@ export default function OrderSuccessClientView({
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
             অর্ডার নম্বর:{' '}
-            <strong className="font-mono text-violet-700 dark:text-violet-400 font-black">
+            <strong className="font-mono text-blue-600 dark:text-blue-400 font-black">
               {order.orderNumber}
             </strong>
           </p>
@@ -69,10 +69,10 @@ export default function OrderSuccessClientView({
 
       {/* INSTANT KEY REVEAL VAULT (If Paid - Screen Only) */}
       {isPaid ? (
-        <div className="glass-card rounded-3xl p-6 sm:p-8 border-2 border-violet-500/30 bg-gradient-to-br from-violet-50/50 via-white to-sky-50/50 dark:from-violet-950/20 dark:via-[#0f172a] dark:to-sky-950/20 shadow-xl space-y-6 no-print print:hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-violet-100 dark:border-white/[0.08] pb-4">
+        <div className="glass-card rounded-3xl p-6 sm:p-8 border-2 border-blue-500/30 bg-gradient-to-br bg-white dark:bg-slate-900 shadow-xl space-y-6 no-print print:hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
                 <Key className="w-5 h-5" />
               </div>
               <div>
@@ -104,7 +104,7 @@ export default function OrderSuccessClientView({
                 >
                   <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                     <span>{item.variantName}</span>
-                    <span className="text-violet-600 dark:text-violet-400">Key #{idx + 1}</span>
+                    <span className="text-blue-600 dark:text-blue-400">Key #{idx + 1}</span>
                   </div>
 
                   {/* License Code Display Box */}
@@ -133,7 +133,7 @@ export default function OrderSuccessClientView({
           </div>
 
           {/* Activation Notice */}
-          <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl p-4 border border-violet-200 dark:border-violet-800/40 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+          <div className="bg-white/80 dark:bg-slate-900/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 space-y-1">
             <h4 className="font-bold text-slate-800 dark:text-white">অ্যাক্টিভেশন সহায়তা:</h4>
             <p>
               উইন্ডোজ বা সফটওয়্যার ওপেন করে সেটিংস থেকে লাইসেন্স কি-টি প্রবেশ করান।
@@ -225,7 +225,7 @@ export default function OrderSuccessClientView({
                   <div key={idx} className="py-2 flex items-center justify-between text-xs">
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200 block">{title}</span>
-                      <span className="text-violet-600 dark:text-violet-400 font-semibold text-[11px]">{variant}</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">{variant}</span>
                       <span className="text-slate-400 text-[11px] ml-1.5">({item.quantity} × {formatPrice(item.unitPrice)})</span>
                     </div>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
@@ -241,7 +241,7 @@ export default function OrderSuccessClientView({
         {/* Pricing */}
         <div className="pt-4 border-t border-slate-100 dark:border-white/[0.08] flex items-center justify-between text-sm">
           <span className="font-bold text-slate-700 dark:text-slate-300">পরিশোধিত মোট মূল্য:</span>
-          <span className="text-lg font-black text-violet-700 dark:text-violet-400">
+          <span className="text-lg font-black text-blue-600 dark:text-blue-400">
             {formatPrice(order.totalAmount)}
           </span>
         </div>
@@ -249,13 +249,22 @@ export default function OrderSuccessClientView({
 
       {/* Bottom Navigation (Screen Only) */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 no-print print:hidden">
-        <Link
-          href="/my-licenses"
-          className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 flex items-center gap-1"
-        >
-          <span>আমার সকল লাইসেন্স কি দেখুন (License Vault)</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link
+            href="/my-licenses"
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
+          >
+            <span>আমার সকল লাইসেন্স কি দেখুন (License Vault)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            href="/downloads"
+            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1"
+          >
+            <span>সফটওয়্যার ডাউনলোড সেন্টার</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
         <Link
           href="/shop"
           className="brand-gradient-btn text-white text-xs font-bold px-5 py-2.5 rounded-xl inline-block"

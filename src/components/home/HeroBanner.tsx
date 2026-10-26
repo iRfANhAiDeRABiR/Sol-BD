@@ -32,7 +32,7 @@ const slides = [
     link: '/shop?q=Windows+11',
     image: 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1400&auto=format&fit=crop&q=80',
     features: ['Lifetime License', 'Instant Delivery', 'All Devices'],
-    accentGradient: 'linear-gradient(135deg, hsl(200,95%,50%) 0%, hsl(220,95%,60%) 100%)',
+    accentGradient: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
   },
   {
     id: 2,
@@ -48,7 +48,7 @@ const slides = [
     link: '/shop?q=IDM',
     image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1400&auto=format&fit=crop&q=80',
     features: ['Official Partner', 'Instant Serial', 'Auto Updates'],
-    accentGradient: 'linear-gradient(135deg, hsl(162,85%,42%) 0%, hsl(190,90%,48%) 100%)',
+    accentGradient: 'linear-gradient(135deg, #34d399 0%, #06b6d4 100%)',
   },
   {
     id: 3,
@@ -64,7 +64,7 @@ const slides = [
     link: '/shop?q=Office',
     image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1400&auto=format&fit=crop&q=80',
     features: ['Permanent Bind', 'No Monthly Fee', 'Commercial Use'],
-    accentGradient: 'linear-gradient(135deg, hsl(38,100%,50%) 0%, hsl(20,100%,55%) 100%)',
+    accentGradient: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 100%)',
   },
 ];
 
@@ -91,10 +91,7 @@ export default function HeroBanner() {
   return (
     <section className="relative px-2 sm:px-4 lg:px-6 pt-2 pb-3 md:pt-3 md:pb-5">
       <div
-        className="hero-readable relative mx-auto w-full max-w-[1800px] rounded-[20px] lg:rounded-[28px] overflow-hidden shadow-2xl border"
-        style={{
-          borderColor: 'hsla(258,78%,75%,0.18)',
-        }}
+        className="hero-readable relative mx-auto w-full max-w-[1800px] rounded-[20px] lg:rounded-[28px] overflow-hidden shadow-xl border border-slate-200/80 dark:border-slate-800"
         role="region"
         aria-roledescription="carousel"
         aria-label="Featured deals"
@@ -109,12 +106,12 @@ export default function HeroBanner() {
             className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
           />
 
-          {/* Shahed Store Readability Wash Overlay */}
+          {/* Readability Wash Overlay */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'linear-gradient(90deg, rgba(8, 12, 24, 0.94) 0%, rgba(8, 12, 24, 0.82) 48%, rgba(8, 12, 24, 0.25) 82%, transparent 100%)',
+                'linear-gradient(90deg, rgba(11, 15, 25, 0.96) 0%, rgba(11, 15, 25, 0.85) 48%, rgba(11, 15, 25, 0.3) 82%, transparent 100%)',
             }}
           />
 
@@ -123,24 +120,12 @@ export default function HeroBanner() {
             <div className="w-full sm:w-[65%] lg:w-[54%] pl-4 sm:pl-8 md:pl-10 lg:pl-14 pr-3 sm:pr-4 space-y-2 sm:space-y-3 md:space-y-4">
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span
-                  className="inline-flex items-center gap-1 text-[8.5px] sm:text-[10px] font-black uppercase tracking-[0.16em] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-white"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
-                    boxShadow: '0 4px 16px hsla(258,78%,55%,0.35)',
-                  }}
-                >
-                  <span className="text-[11px]">🔥</span>
+                <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10.5px] font-bold uppercase tracking-[0.14em] px-3 py-1 sm:py-1.5 rounded-full text-white bg-blue-600 shadow-sm shadow-blue-500/30">
+                  <span className="text-[11px]">⚡</span>
                   {slide.badge}
                 </span>
 
-                <span
-                  className="hidden sm:inline-flex items-center text-[9px] font-bold tracking-widest uppercase px-2.5 py-1.5 rounded-full border text-sky-300"
-                  style={{
-                    background: 'hsla(258,78%,55%,0.15)',
-                    borderColor: 'hsla(200,90%,60%,0.35)',
-                  }}
-                >
+                <span className="hidden sm:inline-flex items-center text-[9px] font-bold tracking-widest uppercase px-2.5 py-1.5 rounded-full border border-slate-700/80 bg-slate-800/80 text-slate-300">
                   {slide.tag}
                 </span>
               </div>
@@ -155,7 +140,7 @@ export default function HeroBanner() {
                   <span
                     className="block"
                     style={{
-                      background: slide.accentGradient,
+                      backgroundImage: slide.accentGradient,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -179,14 +164,9 @@ export default function HeroBanner() {
                 {slide.features.map((feature) => (
                   <span
                     key={feature}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full text-white backdrop-blur-md"
-                    style={{
-                      background: 'hsla(0,0%,100%,0.10)',
-                      border: '1px solid hsla(0,0%,100%,0.22)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    }}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full text-slate-200 bg-white/10 border border-white/15 backdrop-blur-md"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-sky-400" />
+                    <CheckCircle2 className="w-3 h-3 text-blue-400" />
                     {feature}
                   </span>
                 ))}
@@ -200,15 +180,10 @@ export default function HeroBanner() {
                 >
                   {slide.price}
                 </span>
-                <span className="text-[11px] sm:text-xs line-through font-medium text-white/60">
+                <span className="text-[11px] sm:text-xs line-through font-medium text-slate-400">
                   {slide.originalPrice}
                 </span>
-                <span
-                  className="text-[9.5px] sm:text-[11px] font-black text-white px-2.5 py-1 rounded-full shadow-md"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(0,80%,55%), hsl(15,90%,55%))',
-                  }}
-                >
+                <span className="text-[9.5px] sm:text-[11px] font-bold text-white px-2.5 py-1 rounded-full bg-rose-600 shadow-sm">
                   {slide.discount}
                 </span>
               </div>
@@ -217,11 +192,7 @@ export default function HeroBanner() {
               <div className="flex flex-wrap gap-2 pt-1">
                 <Link
                   href={slide.link}
-                  className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-full text-white text-[11.5px] sm:text-[13px] font-bold active:scale-95 transition-all shadow-lg hover:brightness-110"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))',
-                    boxShadow: '0 4px 18px hsla(258,78%,55%,0.4)',
-                  }}
+                  className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-full text-white text-[11.5px] sm:text-[13px] font-bold active:scale-95 transition-all shadow-md shadow-blue-600/30 bg-blue-600 hover:bg-blue-500"
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
                   <span>Buy Now</span>
@@ -230,27 +201,23 @@ export default function HeroBanner() {
 
                 <Link
                   href="/shop"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[12.5px] font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 border"
-                  style={{
-                    background: 'hsla(0,0%,100%,0.12)',
-                    borderColor: 'hsla(0,0%,100%,0.25)',
-                  }}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[12.5px] font-bold text-white backdrop-blur-md transition-all bg-white/10 hover:bg-white/15 border border-white/20"
                 >
-                  <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
+                  <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
                   <span>View All Deals</span>
                 </Link>
               </div>
 
               {/* Trust Indicators Strip */}
-              <div className="hidden lg:flex flex-wrap gap-3 pt-2 text-white/85 text-[10.5px] font-semibold">
+              <div className="hidden lg:flex flex-wrap gap-3 pt-2 text-slate-300 text-[10.5px] font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-sky-400" /> Instant Delivery
+                  <Zap className="w-3 h-3 text-blue-400" /> Instant Delivery
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Shield className="w-3 h-3 text-sky-400" /> 100% Genuine
+                  <Shield className="w-3 h-3 text-blue-400" /> 100% Genuine
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="w-3 h-3 text-sky-400" /> 24/7 Support
+                  <Clock className="w-3 h-3 text-blue-400" /> 24/7 Support
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> 4.9★ Rating
@@ -263,20 +230,14 @@ export default function HeroBanner() {
           <button
             onClick={prevSlide}
             aria-label="Previous hero slide"
-            className="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center transition-all hover:scale-110 text-white backdrop-blur-md border border-white/25 shadow-lg active:scale-95"
-            style={{
-              background: 'hsla(0,0%,100%,0.15)',
-            }}
+            className="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center transition-all hover:bg-white/25 text-white backdrop-blur-md border border-white/20 shadow-sm active:scale-95 bg-white/10"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={nextSlide}
             aria-label="Next hero slide"
-            className="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center transition-all hover:scale-110 text-white backdrop-blur-md border border-white/25 shadow-lg active:scale-95"
-            style={{
-              background: 'hsla(0,0%,100%,0.15)',
-            }}
+            className="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center transition-all hover:bg-white/25 text-white backdrop-blur-md border border-white/20 shadow-sm active:scale-95 bg-white/10"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -295,11 +256,8 @@ export default function HeroBanner() {
             style={{
               width: currentSlide === idx ? '24px' : '7px',
               height: '7px',
-              background:
-                currentSlide === idx
-                  ? 'linear-gradient(135deg, hsl(258,78%,55%), hsl(200,90%,45%))'
-                  : 'hsla(220,15%,75%,0.6)',
-              boxShadow: currentSlide === idx ? '0 0 8px hsla(258,78%,55%,0.55)' : 'none',
+              backgroundColor: currentSlide === idx ? '#2563eb' : 'rgba(148, 163, 184, 0.4)',
+              boxShadow: currentSlide === idx ? '0 0 8px rgba(37, 99, 235, 0.4)' : 'none',
             }}
           />
         ))}

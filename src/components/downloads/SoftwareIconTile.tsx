@@ -65,6 +65,11 @@ const VARIANT_THEME: Record<
     shadow: "rgba(5, 150, 105, 0.38)",
     tag: "PROJECT",
   },
+  "adobe-acrobat": {
+    bg: "linear-gradient(145deg, #ef4444 0%, #dc2626 52%, #991b1b 100%)",
+    shadow: "rgba(220, 38, 38, 0.38)",
+    tag: "ACROBAT",
+  },
   custom: {
     bg: "linear-gradient(145deg, #38bdf8 0%, #6366f1 55%, #312e81 100%)",
     shadow: "rgba(99, 102, 241, 0.35)",
@@ -235,6 +240,35 @@ function renderEmblem(variant: SoftwareDownloadItem["variant"], svgSize: number)
           <rect x="8" y="10" width="13" height="4" rx="2" fill="white" />
           <rect x="12" y="16" width="15" height="4" rx="2" fill="white" fillOpacity="0.9" />
           <rect x="9" y="22" width="10" height="4" rx="2" fill="white" fillOpacity="0.78" />
+        </svg>
+      );
+
+    case "adobe-acrobat":
+      return (
+        <svg width={svgSize} height={svgSize} viewBox="0 0 36 36" fill="none">
+          {/* Acrobat PDF Icon */}
+          <path
+            d="M7 6C7 4.89543 7.89543 4 9 4H21L29 12V30C29 31.1046 28.1046 32 27 32H9C7.89543 32 7 31.1046 7 30V6Z"
+            fill="white"
+            fillOpacity="0.22"
+          />
+          <path
+            d="M20 4V13H29"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M12 21C14 17 16 14 18 14C20 14 22 17 24 21C22 20 20 19.5 18 19.5C16 19.5 14 20 12 21Z"
+            fill="white"
+          />
+          <path
+            d="M14 24C16 23.2 18 22.8 20 22.8C21.5 22.8 23 23.2 24.5 24"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </svg>
       );
 

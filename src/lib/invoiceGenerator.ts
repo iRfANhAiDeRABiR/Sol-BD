@@ -536,3 +536,4 @@ export async function generateInvoicePdf(
 
   return await pdfDoc.save();
 }
+

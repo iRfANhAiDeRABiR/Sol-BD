@@ -17,6 +17,7 @@ export type SoftwareDownloadVariant =
   | "office-2010"
   | "visio"
   | "project"
+  | "adobe-acrobat"
   | "custom";
 
 export interface SoftwareDownloadItem {
@@ -360,6 +361,46 @@ export const SOFTWARE_DOWNLOADS: SoftwareDownloadItem[] = [
         label: "Project Professional 2016 (Official IMG)",
         url: "https://officecdn.microsoft.com/db/492350f6-3a01-4f97-b9c0-c7c6ddf67d60/media/en-us/ProjectProRetail.img",
         arch: "32/64-Bit",
+      },
+    ],
+  },
+  {
+    id: "adobe-acrobat-pro",
+    title: "Adobe Acrobat Pro DC & 2020",
+    fullName: "Adobe Acrobat Pro DC & Acrobat Pro 2020 (Official)",
+    badgeLabel: "Acrobat",
+    variant: "adobe-acrobat",
+    category: "Adobe & Design",
+    version: "DC Continuous & 2020 Perpetual",
+    architecture: "64-Bit & 32-Bit",
+    fileSize: "1.1 GB",
+    fileType: "Official Setup (EXE / DMG)",
+    downloadUrl:
+      "https://helpx.adobe.com/download-install/kb/acrobat-2020-downloads.html",
+    productLink: "/product/adobe-acrobat-pro-dc",
+    image: "/img_content/adobe.png",
+    sortOrder: 11,
+    isActive: true,
+    versions: [
+      {
+        label: "Adobe Acrobat Pro / Standard DC (Official Adobe Web Installer)",
+        url: "https://helpx.adobe.com/acrobat/kb/acrobat-downloads.html",
+        arch: "64/32-Bit",
+      },
+      {
+        label: "Adobe Acrobat Pro 2020 Perpetual (Windows 64-Bit Offline Installer)",
+        url: "https://trials.adobe.com/AdobeProducts/APRO/2020/win32/Acrobat_2020_Web_WWMUI.exe",
+        arch: "64-Bit",
+      },
+      {
+        label: "Adobe Acrobat Pro 2020 Perpetual (Windows 32-Bit Offline Installer)",
+        url: "https://trials.adobe.com/AdobeProducts/APRO/2020/win32/Acrobat_2020_Web_WWMUI.exe",
+        arch: "32-Bit",
+      },
+      {
+        label: "Adobe Creative Cloud Desktop App (Direct from Adobe.com)",
+        url: "https://creativecloud.adobe.com/apps/download/creative-cloud",
+        arch: "All OS",
       },
     ],
   },

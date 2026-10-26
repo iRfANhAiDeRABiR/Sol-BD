@@ -12,9 +12,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Helper to load env variables from .env and .env.local
+// Helper to load env variables with Next.js priority (.env.local overrides .env)
 function loadEnv() {
-  const envFiles = ['.env', '.env.local'];
+  const envFiles = ['.env.local', '.env'];
   for (const file of envFiles) {
     const fullPath = path.resolve(process.cwd(), file);
     if (fs.existsSync(fullPath)) {
@@ -29,7 +29,7 @@ function loadEnv() {
           if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
             val = val.slice(1, -1);
           }
-          if (!process.env[key]) {
+          if (process.env[key] === undefined) {
             process.env[key] = val;
           }
         }

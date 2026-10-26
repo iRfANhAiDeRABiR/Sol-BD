@@ -521,6 +521,17 @@ export default function CustomerDashboardClient({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <a
+                        href={`/api/orders/${encodeURIComponent(order.orderNumber)}/invoice`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold flex items-center gap-1.5 transition-colors"
+                        title="Download Official Invoice PDF"
+                      >
+                        <Download className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <span>Invoice PDF</span>
+                      </a>
+
                       <Link
                         href={`/order-success/${order.orderNumber}`}
                         className="py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold flex items-center gap-1.5"

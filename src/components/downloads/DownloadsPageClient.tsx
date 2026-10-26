@@ -35,7 +35,7 @@ interface DownloadsPageClientProps {
   initialUserLoggedIn?: boolean;
 }
 
-const STORAGE_KEY = "techbd_verified_download_order";
+const STORAGE_KEY = "sbd_verified_download_order";
 
 export function DownloadsPageClient({
   initialItems = SOFTWARE_DOWNLOADS,
@@ -61,7 +61,7 @@ export function DownloadsPageClient({
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  // Check sessionStorage and auto-check logged-in user on mount
+  // Check sessionStorage, URL param, submitted order and auto-check logged-in user on mount
   useEffect(() => {
     if (isVerified) {
       if (verifiedOrder && typeof window !== "undefined") {
@@ -71,10 +71,46 @@ export function DownloadsPageClient({
     }
 
     if (typeof window !== "undefined") {
-      const cached = sessionStorage.getItem(STORAGE_KEY);
+      const cached = sessionStorage.getItem(STORAGE_KEY) || sessionStorage.getItem("techbd_verified_download_order");
       if (cached) {
         setIsVerified(true);
         setVerifiedOrder(cached);
+        return;
+      }
+
+      // Check URL ?order= param
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlOrder = urlParams.get("order")?.trim();
+
+      // Check recent order placed in session/localStorage
+      let recentOrder = urlOrder || null;
+      if (!recentOrder) {
+        const stored = sessionStorage.getItem("sbd_submitted_order") || localStorage.getItem("sbd_submitted_order");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed?.orderNumber) recentOrder = parsed.orderNumber;
+          } catch {}
+        }
+      }
+
+      if (recentOrder) {
+        setOrderInput(recentOrder);
+        // Automatically verify the detected order
+        fetch("/api/downloads/verify-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: recentOrder }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.valid) {
+              setIsVerified(true);
+              setVerifiedOrder(data.orderNumber || recentOrder);
+              sessionStorage.setItem(STORAGE_KEY, data.orderNumber || recentOrder);
+            }
+          })
+          .catch(() => {});
         return;
       }
     }
@@ -147,7 +183,15 @@ export function DownloadsPageClient({
       setCopiedUrl(false);
     } else {
       setPendingSoftware(item);
-      setOrderInput("");
+      if (!orderInput && typeof window !== "undefined") {
+        const stored = sessionStorage.getItem("sbd_submitted_order") || localStorage.getItem("sbd_submitted_order");
+        if (stored) {
+          try {
+            const p = JSON.parse(stored);
+            if (p?.orderNumber) setOrderInput(p.orderNumber);
+          } catch {}
+        }
+      }
       setVerifyError(null);
       setShowOrderModal(true);
     }
@@ -201,9 +245,7 @@ export function DownloadsPageClient({
 
   const handleOpenAuth = () => {
     setShowOrderModal(false);
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("techbd:open-auth-modal"));
-    }
+    window.location.href = "/login?redirect=/downloads";
   };
 
   return (
@@ -480,7 +522,7 @@ export function DownloadsPageClient({
                     id="order-id-input"
                     type="text"
                     className={styles.verifyInput}
-                    placeholder="যেমন: TECHBD-ATD-XXXXXX বা #12345"
+                    placeholder="যেমন: SBD-2026-XXXXXX বা #12345"
                     value={orderInput}
                     onChange={(e) => {
                       setOrderInput(e.target.value);

@@ -145,8 +145,13 @@ export function buildProductImageAssets(
 export function getMailConfig() {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
   const user = process.env.SMTP_USER || "solutionsbd247@gmail.com";
-  const pass = process.env.SMTP_PASS || "wzfk ygag liaj tiqa";
-  const from = process.env.SMTP_FROM || `SolutionsBD <${user}>`;
+  let pass = process.env.SMTP_PASS;
+  if (!pass || pass.includes("your_") || pass.length < 8) {
+    pass = "wzfk ygag liaj tiqa";
+  }
+  const from = process.env.SMTP_FROM && !process.env.SMTP_FROM.includes("your_")
+    ? process.env.SMTP_FROM
+    : `SolutionsBD <${user}>`;
 
   if (!host || !user || !pass) {
     return null;

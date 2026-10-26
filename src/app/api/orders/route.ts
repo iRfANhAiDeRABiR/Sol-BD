@@ -215,42 +215,45 @@ export async function POST(request: Request) {
       console.warn('Telegram alert skipped or failed:', teleErr);
     }
 
-    // Send professional Order Confirmation receipt email asynchronously
+    // Send professional Order Confirmation receipt email
     if (result.customerEmail) {
-      sendOrderConfirmationEmail({
-        order: {
-          orderNumber: result.orderNumber,
-          total: result.totalAmount,
-        },
-        customer: {
-          name: result.customerName,
-          email: result.customerEmail,
-          phone: result.customerPhone,
-        },
-        items: validatedItems.map((it) => ({
-          productName: it.productName,
-          optionName: it.variantName,
-          quantity: it.quantity,
-          unitPrice: it.unitPrice,
-        })),
-        totals: {
-          subtotal: calculatedSubtotal,
-          discount: verifiedDiscount,
-          total: result.totalAmount,
-        },
-        paymentLabel:
-          paymentMethod === 'BKASH_MANUAL'
-            ? 'bKash Send Money'
-            : paymentMethod === 'NAGAD_MANUAL'
-            ? 'Nagad Send Money'
-            : paymentMethod === 'ROCKET_MANUAL'
-            ? 'Rocket Send Money'
-            : String(paymentMethod),
-        paymentTrxId: result.paymentTrxId || undefined,
-        senderPhone: result.senderPhone || undefined,
-      }).catch((emailErr) => {
-        console.warn('Order confirmation email failed to send:', emailErr);
-      });
+      try {
+        const mailRes = await sendOrderConfirmationEmail({
+          order: {
+            orderNumber: result.orderNumber,
+            total: result.totalAmount,
+          },
+          customer: {
+            name: result.customerName,
+            email: result.customerEmail,
+            phone: result.customerPhone,
+          },
+          items: validatedItems.map((it) => ({
+            productName: it.productName,
+            optionName: it.variantName,
+            quantity: it.quantity,
+            unitPrice: it.unitPrice,
+          })),
+          totals: {
+            subtotal: calculatedSubtotal,
+            discount: verifiedDiscount,
+            total: result.totalAmount,
+          },
+          paymentLabel:
+            paymentMethod === 'BKASH_MANUAL'
+              ? 'bKash Send Money'
+              : paymentMethod === 'NAGAD_MANUAL'
+              ? 'Nagad Send Money'
+              : paymentMethod === 'ROCKET_MANUAL'
+              ? 'Rocket Send Money'
+              : String(paymentMethod),
+          paymentTrxId: result.paymentTrxId || undefined,
+          senderPhone: result.senderPhone || undefined,
+        });
+        console.log(`[Order Creation] Confirmation email dispatched for #${result.orderNumber}:`, mailRes);
+      } catch (emailErr) {
+        console.error(`[Order Creation] Confirmation email failed for #${result.orderNumber}:`, emailErr);
+      }
     }
 
     return NextResponse.json({

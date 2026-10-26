@@ -649,135 +649,212 @@ export default function CustomerDashboardClient({
         </div>
       )}
 
-      {/* TAB 4: PROFILE & SECURITY */}
+      {/* TAB 4: PROFILE & SECURITY (MODERN REDESIGN) */}
       {activeTab === 'profile' && (
-        <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-8 shadow-sm space-y-8">
-          <div>
-            <h2 className="text-lg font-black text-slate-900 dark:text-white">Profile & Security Settings</h2>
-            <p className="text-xs text-slate-500">Update your account name, mobile number, or change your password.</p>
+        <div className="space-y-6">
+          {/* Top Profile Card Summary */}
+          <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-blue-500/25 shrink-0">
+                  {(editName || user.name || 'User').split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                      {editName || user.name || 'Account Holder'}
+                    </h2>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <ShieldCheck className="w-3 h-3" />
+                      Verified
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{user.email}</p>
+                  <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3" />
+                    Member since {formatDate(user.createdAt)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-start sm:self-center">
+                <div className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-right">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Digital Licenses</span>
+                  <span className="text-base font-black text-slate-900 dark:text-white">{totalKeysDelivered} Keys</span>
+                </div>
+                <div className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-right">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Orders</span>
+                  <span className="text-base font-black text-slate-900 dark:text-white">{totalOrders}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-6 max-w-xl">
-            <div className="space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
-                Personal Information
-              </h3>
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Card 1: Personal Details */}
+              <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-7 shadow-sm space-y-5">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                      Personal Information
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Your official account profile details.</p>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    placeholder="Your Name"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
-                    required
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="IRFAN HAIDER ABIR"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Email Address
+                      </label>
+                      <span className="text-[10px] font-semibold text-slate-400">Locked to License Vault</span>
+                    </div>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        value={user.email}
+                        disabled
+                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-100 dark:bg-slate-800/40 text-slate-500 font-medium cursor-not-allowed"
+                      />
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      Email address is permanently associated with your purchased license keys.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Mobile Number (bKash / Nagad / WhatsApp)
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        placeholder="01XXXXXXXXX"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    value={user.email}
-                    disabled
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-slate-500 font-medium cursor-not-allowed"
-                  />
+              {/* Card 2: Security & Password */}
+              <div className="bg-white/95 dark:bg-[#0f172a]/95 rounded-3xl border border-slate-200/80 dark:border-white/[0.08] p-6 sm:p-7 shadow-sm space-y-5">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                      Security &amp; Password
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Leave blank if you do not want to change your password.</p>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">
-                  Email address is permanently associated with your purchased license keys.
-                </span>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Mobile Number (bKash / Nagad / WhatsApp)
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="tel"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="01XXXXXXXXX"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Min 6 characters"
+                          className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Confirm New Password
+                      </label>
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-type password"
+                          className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security Note */}
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 flex items-start gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Your digital licenses and payment credentials are encrypted in SolutionsBD&apos;s vault. Never share your password with third parties.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 pt-4">
-              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
-                Change Password (Optional)
-              </h3>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password"
-                    className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Minimum 6 characters"
-                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Re-type new password"
-                      className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-blue-500 bg-slate-50/70 dark:bg-slate-800/60 text-slate-900 dark:text-white font-medium"
-                    />
-                  </div>
-                </div>
-              </div>
+            {/* Bottom Submit Action */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={savingProfile}
+                className="py-3 px-8 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/25 active:scale-[0.99] transition-all disabled:opacity-60 flex items-center gap-2 cursor-pointer"
+              >
+                {savingProfile ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Saving Changes...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Save Profile Changes</span>
+                  </>
+                )}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={savingProfile}
-              className="py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm text-white brand-gradient-btn shadow-md shadow-blue-500/20 active:scale-[0.99] transition-transform disabled:opacity-60"
-            >
-              {savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
-            </button>
           </form>
         </div>
       )}

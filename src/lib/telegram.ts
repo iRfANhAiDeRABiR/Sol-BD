@@ -31,11 +31,22 @@ export interface TelegramOrderNotificationPayload {
   maxReminders?: number;
 }
 
+function getTelegramCredentials() {
+  let token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token || token.includes('your_')) {
+    token = '8879982228:AAEVhgc63HN1vBxOSIN2kJVX2QRVRPDp8nQ';
+  }
+  let chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (!chatId || chatId.includes('your_')) {
+    chatId = '5696241698';
+  }
+  return { token, chatId };
+}
+
 export async function sendTelegramOrderNotification(
   payload: TelegramOrderNotificationPayload
 ): Promise<{ success: boolean; messageId?: number; error?: string }> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const { token, chatId } = getTelegramCredentials();
 
   if (!token || !chatId) {
     console.warn("Telegram credentials (TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID) missing in environment.");
@@ -126,7 +137,7 @@ ${statusLine}
 }
 
 export async function answerTelegramCallbackQuery(callbackQueryId: string, text: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const { token } = getTelegramCredentials();
   if (!token) return;
 
   try {
@@ -152,7 +163,7 @@ export async function updateTelegramMessageStatus(params: {
   adminName: string;
   originalText?: string;
 }) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const { token } = getTelegramCredentials();
   if (!token) return;
 
   const isConfirm = params.action === "CONFIRMED";

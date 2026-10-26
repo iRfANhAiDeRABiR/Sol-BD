@@ -986,8 +986,10 @@ export default function CartPageClient() {
                 })}
               </div>
 
-              {/* Coupon Section */}
-              <div className={styles.couponSection}>
+              {/* Bottom Order Summary Elements (anchored to bottom for equal height) */}
+              <div className={styles.orderSummaryBottom}>
+                {/* Coupon Section */}
+                <div className={styles.couponSection}>
                 <label htmlFor="coupon-input" className={styles.couponLabel}>
                   Have a coupon code?
                 </label>
@@ -1096,6 +1098,7 @@ export default function CartPageClient() {
                 </Link>
                 .
               </p>
+            </div>
             </div>
           </aside>
         </div>

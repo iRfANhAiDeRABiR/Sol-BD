@@ -429,13 +429,13 @@ Browse privately, bypass geo-restrictions, and secure public Wi-Fi on up to 6 de
     where: { email: 'solutionsbd247@gmail.com' },
     update: {
       role: 'OWNER',
-      name: 'SolutionsBD Owner',
+      name: 'IRFAN HAIDER ABIR',
       password: 't18gzykHw9YyWzh9',
       isActive: true,
     },
     create: {
       email: 'solutionsbd247@gmail.com',
-      name: 'SolutionsBD Owner',
+      name: 'IRFAN HAIDER ABIR',
       phone: '+8801410699879',
       role: 'OWNER',
       password: 't18gzykHw9YyWzh9',

@@ -209,39 +209,34 @@ export async function processTelegramOrderAction({
 
     const orderToUse = updatedOrder || existingOrder;
 
-    // Send customer email notification asynchronously
+    // Send customer email notification
     let emailSent = false;
     if (orderToUse.customerEmail) {
-      sendOrderStatusEmail({
-        order: {
-          orderNumber: orderToUse.orderNumber,
-          customerName: orderToUse.customerName,
-          customerEmail: orderToUse.customerEmail,
-          customerPhone: orderToUse.customerPhone,
-          subtotal: orderToUse.totalAmount + (orderToUse.discountAmount || 0),
-          discount: orderToUse.discountAmount || 0,
-          total: orderToUse.totalAmount,
-          deliveredKeys: orderToUse.deliveredKeys,
-          items: orderToUse.items,
-          payments: orderToUse.payments,
-          paymentMethod: orderToUse.paymentMethod,
-          paymentTrxId: orderToUse.paymentTrxId,
-          senderPhone: orderToUse.senderPhone,
-        },
-        action,
-        allocatedKeys: allocatedKeysList,
-      })
-        .then((res) => {
-          if (res.success) {
-            console.log(`[processTelegramOrderAction] Status email (${action}) dispatched to ${orderToUse.customerEmail}`);
-          } else {
-            console.warn(`[processTelegramOrderAction] Status email (${action}) failed for #${cleanRef}:`, res.error);
-          }
-        })
-        .catch((err) => {
-          console.error(`[processTelegramOrderAction] Error sending status email for #${cleanRef}:`, err);
+      try {
+        const emailRes = await sendOrderStatusEmail({
+          order: {
+            orderNumber: orderToUse.orderNumber,
+            customerName: orderToUse.customerName,
+            customerEmail: orderToUse.customerEmail,
+            customerPhone: orderToUse.customerPhone,
+            subtotal: orderToUse.totalAmount + (orderToUse.discountAmount || 0),
+            discount: orderToUse.discountAmount || 0,
+            total: orderToUse.totalAmount,
+            deliveredKeys: orderToUse.deliveredKeys,
+            items: orderToUse.items,
+            payments: orderToUse.payments,
+            paymentMethod: orderToUse.paymentMethod,
+            paymentTrxId: orderToUse.paymentTrxId,
+            senderPhone: orderToUse.senderPhone,
+          },
+          action,
+          allocatedKeys: allocatedKeysList,
         });
-      emailSent = true;
+        emailSent = emailRes.success;
+        console.log(`[processTelegramOrderAction] Status email (${action}) result:`, emailRes);
+      } catch (err) {
+        console.error(`[processTelegramOrderAction] Error sending status email for #${cleanRef}:`, err);
+      }
     }
 
     return {
